@@ -7,6 +7,7 @@ public class Institution
     public InstitutionType Type { get; set; }
 
     public List<Branch> Branches { get; private set; } = new();
+    public List<MedicalService> Services { get; private set; } = new();
 
     public bool IsMultiBranch => Branches.Count > 1;
 
@@ -17,5 +18,14 @@ public class Institution
 
         branch.Institution = this;
         Branches.Add(branch);
+    }
+
+    public void AddService(MedicalService service)
+    {
+        if (Services.Any(s => string.Equals(s.Name, service.Name, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"A service named '{service.Name}' already exists.");
+
+        service.Institution = this;
+        Services.Add(service);
     }
 }
