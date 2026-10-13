@@ -11,6 +11,7 @@ public class Doctor : User
     public Department? Department { get; set; }
 
     public List<MedicalService> Services { get; private set; } = new();
+    public List<AvailabilitySlot> Availability { get; private set; } = new();
 
     public Doctor()
     {
@@ -31,6 +32,18 @@ public class Doctor : User
     }
 
     public bool CanPerform(MedicalService service) => Services.Contains(service);
+
+    public void AddAvailability(AvailabilitySlot slot)
+    {
+        if (Availability.Any(s => s.Overlaps(slot)))
+            throw new InvalidOperationException("This slot overlaps with an existing availability slot.");
+
+        slot.Doctor = this;
+        Availability.Add(slot);
+    }
+
+    public bool IsAvailable(DateTime start, DateTime end) =>
+        Availability.Any(s => s.Contains(start, end));
 
     public override string GetRoleDescription()
     {
