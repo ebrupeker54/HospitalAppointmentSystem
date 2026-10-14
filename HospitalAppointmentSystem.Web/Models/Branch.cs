@@ -33,4 +33,14 @@ public class Branch
         var hours = Schedule.FirstOrDefault(w => w.Day == dateTime.DayOfWeek);
         return hours != null && hours.Covers(TimeOnly.FromDateTime(dateTime));
     }
+    public bool IsOpenBetween(DateTime start, DateTime end)
+    {
+        if (start.Date != end.Date)
+            return false;
+
+        var hours = Schedule.FirstOrDefault(w => w.Day == start.DayOfWeek);
+        return hours != null
+            && TimeOnly.FromDateTime(start) >= hours.OpenTime
+            && TimeOnly.FromDateTime(end) <= hours.CloseTime;
+    }
 }
