@@ -1,7 +1,17 @@
+using HospitalAppointmentSystem.Web.Data;
+using HospitalAppointmentSystem.Web.Repositories;
+using HospitalAppointmentSystem.Web.Services;
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IAppointmentRepository, EfAppointmentRepository>();
+builder.Services.AddScoped<AppointmentService>();
 
 var app = builder.Build();
 
