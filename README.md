@@ -10,7 +10,7 @@ A web-based hospital/clinic appointment system developed as an Object-Oriented P
 - [x] Doctor availability slots
 - [x] Appointment booking with conflict checking (branch hours, doctor availability, doctor and patient overlaps)
 - [x] Appointment approval workflow (Pending → Approved / Rejected → Completed, or Cancelled)
-- [ ] User registration and login
+- [x] User registration and login
 - [ ] Role-based pages: Patient, Doctor, Admin
 
 ## Technologies
