@@ -43,7 +43,7 @@ public class AccountController : Controller
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return Redirect(returnUrl);
 
-        return RedirectToAction("Index", "Home");
+        return RedirectToAction("Index", user.DashboardController);
     }
 
     [HttpGet]
@@ -61,7 +61,7 @@ public class AccountController : Controller
                 model.PhoneNumber, model.NationalId, model.DateOfBirth!.Value, model.Password);
 
             await SignInAsync(patient);
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", patient.DashboardController);
         }
         catch (InvalidOperationException ex)
         {

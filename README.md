@@ -11,7 +11,7 @@ A web-based hospital/clinic appointment system developed as an Object-Oriented P
 - [x] Appointment booking with conflict checking (branch hours, doctor availability, doctor and patient overlaps)
 - [x] Appointment approval workflow (Pending → Approved / Rejected → Completed, or Cancelled)
 - [x] User registration and login
-- [ ] Role-based pages: Patient, Doctor, Admin
+- [x] Role-based pages: Patient, Doctor, Admin
 
 ## Technologies
 
@@ -53,3 +53,13 @@ HospitalAppointmentSystem.Web/
 ```bash
    dotnet run
 ```
+
+
+
+## Demo Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@hospital.com | Admin123! |
+| Doctor | ayse.yilmaz@hospital.com | Doctor123! |
+| Patient | patient@test.com | Patient123! |

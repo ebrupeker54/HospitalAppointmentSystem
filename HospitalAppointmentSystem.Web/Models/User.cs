@@ -32,6 +32,6 @@ public abstract class User
 
         return Hasher.VerifyHashedPassword(this, PasswordHash, password) != PasswordVerificationResult.Failed;
     }
-
+    public abstract string DashboardController { get; }
     public abstract string GetRoleDescription();
 }

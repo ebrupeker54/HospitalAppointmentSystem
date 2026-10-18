@@ -17,6 +17,7 @@ public class Doctor : User
     {
         Role = UserRole.Doctor;
     }
+    public override string DashboardController => "Doctor";
 
     public void AddService(MedicalService service)
     {

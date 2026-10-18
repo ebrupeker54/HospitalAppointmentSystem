@@ -10,6 +10,8 @@ public class Patient : User
         Role = UserRole.Patient;
     }
 
+    public override string DashboardController => "Patient";
+
     public override string GetRoleDescription()
     {
         return "Patient - can book and manage appointments";

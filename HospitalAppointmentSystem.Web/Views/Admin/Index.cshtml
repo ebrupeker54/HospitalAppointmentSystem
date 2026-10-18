@@ -1,0 +1,63 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Panel";
+}
+
+<h2>Admin Panel</h2>
+<p class="text-muted">Welcome, @User.Identity?.Name</p>
+
+<div class="row g-3 mb-4">
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.InstitutionCount</h3><div class="text-muted">Institutions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.BranchCount</h3><div class="text-muted">Branches</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.DoctorCount</h3><div class="text-muted">Doctors</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.PatientCount</h3><div class="text-muted">Patients</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.PendingAppointmentCount</h3><div class="text-muted">Pending Appointments</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4>Doctors</h4>
+<table class="table table-hover align-middle">
+    <thead>
+        <tr><th>Name</th><th>Specialty</th><th>Branch</th><th>Services</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var d in Model.Doctors)
+        {
+            <tr>
+                <td>@d.FullName</td>
+                <td>@d.Specialty</td>
+                <td>@d.Branch?.Name</td>
+                <td>@string.Join(", ", d.Services.Select(s => s.Name))</td>
+            </tr>
+        }
+    </tbody>
+</table>
