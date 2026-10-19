@@ -73,7 +73,13 @@
                                 <small class="text-muted">@a.Duration.TotalMinutes min</small>
                             </td>
                             <td>@a.Price.ToString("N2") TL</td>
-                            <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
+                            <td>
+                                <span class="badge @a.Status.ToBadgeClass()">@a.Status</span>
+                                @if (a.Status == AppointmentStatus.Rejected && !string.IsNullOrEmpty(a.RejectionReason))
+                                {
+                                    <div class="small text-muted mt-1">@a.RejectionReason</div>
+                                }
+                            </td>
                             <td class="text-end">
                                 @if (a.IsActive && a.StartTime > DateTime.Now)
                                 {

@@ -15,6 +15,7 @@ builder.Services.AddScoped<IAppointmentRepository, EfAppointmentRepository>();
 builder.Services.AddScoped<AppointmentService>();
 
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<AvailabilityService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

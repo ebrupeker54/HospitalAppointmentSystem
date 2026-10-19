@@ -36,6 +36,9 @@ public class Doctor : User
 
     public void AddAvailability(AvailabilitySlot slot)
     {
+        if (Branch != null && !Branch.IsOpenBetween(slot.Start, slot.End))
+            throw new InvalidOperationException("The slot must be within the branch's working hours.");
+
         if (Availability.Any(s => s.Overlaps(slot)))
             throw new InvalidOperationException("This slot overlaps with an existing availability slot.");
 

@@ -465,3 +465,13 @@ a {
     border-radius: 12px;
     border: none;
 }
+
+.slot-list {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.modal-content {
+    border: none;
+    border-radius: 16px;
+}

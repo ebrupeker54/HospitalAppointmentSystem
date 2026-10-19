@@ -10,7 +10,7 @@
 <div class="page-header">
     <div>
         <h1>Doctor Panel</h1>
-        <p>Welcome, @User.Identity?.Name</p>
+        <p>Welcome, Dr. @User.Identity?.Name</p>
     </div>
 </div>
 
@@ -30,7 +30,7 @@
     <div class="col-sm-4">
         <div class="stat-card stat-violet">
             <div class="stat-icon"><i class="bi bi-clock"></i></div>
-            <div><div class="stat-value">@Model.UpcomingSlots.Count</div><div class="stat-label">Next Available Slots</div></div>
+            <div><div class="stat-value">@Model.UpcomingSlots.Count</div><div class="stat-label">Upcoming Slots</div></div>
         </div>
     </div>
 </div>
@@ -51,7 +51,7 @@
                 <div class="table-responsive">
                     <table class="table table-modern align-middle">
                         <thead>
-                            <tr><th>Date</th><th>Patient</th><th>Service</th><th>Status</th></tr>
+                            <tr><th>Date</th><th>Patient</th><th>Service</th><th>Status</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach (var a in Model.Appointments)
@@ -64,6 +64,32 @@
                                     <td>@a.Patient?.FullName</td>
                                     <td>@a.MedicalService?.Name</td>
                                     <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
+                                    <td class="text-end">
+                                        @if (a.Status == AppointmentStatus.Pending)
+                                        {
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <form asp-action="Approve" asp-route-id="@a.Id" method="post">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check-lg me-1"></i>Approve
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                                        data-id="@a.Id" data-patient="@a.Patient?.FullName">
+                                                    <i class="bi bi-x-lg me-1"></i>Reject
+                                                </button>
+                                            </div>
+                                        }
+                                        else if (a.Status == AppointmentStatus.Approved)
+                                        {
+                                            <form asp-action="Complete" asp-route-id="@a.Id" method="post"
+                                                  onsubmit="return confirm('Mark this appointment as completed?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-brand">
+                                                    <i class="bi bi-check2-all me-1"></i>Complete
+                                                </button>
+                                            </form>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -75,21 +101,85 @@
 
     <div class="col-lg-4">
         <div class="panel-card">
-            <div class="panel-card-header"><i class="bi bi-calendar-week"></i> Upcoming Availability</div>
-            @if (!Model.UpcomingSlots.Any())
-            {
-                <div class="empty-state"><p class="mb-0">No upcoming slots.</p></div>
-            }
-            else
-            {
-                @foreach (var s in Model.UpcomingSlots)
-                {
-                    <div class="slot-item">
-                        <span>@s.Start.ToString("dd MMM, ddd")</span>
-                        <span class="slot-time">@s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")</span>
+            <div class="panel-card-header"><i class="bi bi-calendar-week"></i> My Availability</div>
+
+            <form asp-action="AddAvailability" method="post" class="p-3 border-bottom">
+                <label class="form-label small">Date</label>
+                <input type="date" name="date" class="form-control mb-2"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                <div class="row g-2 mb-3">
+                    <div class="col">
+                        <label class="form-label small">From</label>
+                        <input type="time" name="startTime" value="09:00" step="900" class="form-control" required />
                     </div>
+                    <div class="col">
+                        <label class="form-label small">To</label>
+                        <input type="time" name="endTime" value="12:00" step="900" class="form-control" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-brand w-100">
+                    <i class="bi bi-plus-lg me-1"></i>Add Slot
+                </button>
+            </form>
+
+            <div class="slot-list">
+                @if (!Model.UpcomingSlots.Any())
+                {
+                    <div class="empty-state"><p class="mb-0">No upcoming slots.</p></div>
                 }
-            }
+                else
+                {
+                    @foreach (var s in Model.UpcomingSlots)
+                    {
+                        <div class="slot-item">
+                            <span>@s.Start.ToString("dd MMM, ddd")</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="slot-time">@s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")</span>
+                                <form asp-action="RemoveAvailability" asp-route-id="@s.Id" method="post"
+                                      onsubmit="return confirm('Remove this slot?');">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Reject Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Patient: <strong id="rejectPatient"></strong></p>
+                    <input type="hidden" name="id" id="rejectId" />
+                    <label class="form-label">Reason</label>
+                    <textarea name="reason" class="form-control" rows="3" required
+                              placeholder="e.g. I will be in surgery at that time. Please choose another slot."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('rejectModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            document.getElementById('rejectId').value = button.dataset.id;
+            document.getElementById('rejectPatient').textContent = button.dataset.patient;
+        });
+    </script>
+}

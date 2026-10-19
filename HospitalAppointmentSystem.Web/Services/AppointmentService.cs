@@ -92,6 +92,35 @@ public class AppointmentService
         _repository.Update(appointment);
     }
 
+    public void ApproveByDoctor(int appointmentId, int doctorId)
+    {
+        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        appointment.Approve();
+        _repository.Update(appointment);
+    }
+
+    public void RejectByDoctor(int appointmentId, int doctorId, string reason)
+    {
+        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        appointment.Reject(reason);
+        _repository.Update(appointment);
+    }
+
+    public void CompleteByDoctor(int appointmentId, int doctorId)
+    {
+        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        appointment.Complete();
+        _repository.Update(appointment);
+    }
+
+    private Appointment GetForDoctorOrThrow(int appointmentId, int doctorId)
+    {
+        var appointment = GetOrThrow(appointmentId);
+        if (appointment.DoctorId != doctorId)
+            throw new InvalidOperationException("This appointment does not belong to you.");
+        return appointment;
+    }
+
     private Appointment GetOrThrow(int appointmentId)
     {
         return _repository.GetById(appointmentId)

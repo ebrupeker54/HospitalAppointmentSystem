@@ -59,9 +59,12 @@ public class Appointment
 
     public void Reject(string reason)
     {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("A rejection reason is required.");
+
         EnsureStatus(AppointmentStatus.Pending, "rejected");
         Status = AppointmentStatus.Rejected;
-        RejectionReason = reason;
+        RejectionReason = reason.Trim();
     }
 
     public void Cancel()
