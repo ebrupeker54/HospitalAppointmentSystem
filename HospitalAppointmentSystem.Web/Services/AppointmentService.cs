@@ -12,6 +12,31 @@ public class AppointmentService
         _repository = repository;
     }
 
+    public List<DateTime> GetAvailableStartTimes(Doctor doctor, MedicalService service, DateTime date)
+    {
+        var result = new List<DateTime>();
+        if (doctor.Branch == null || !doctor.CanPerform(service))
+            return result;
+
+        var booked = _repository.GetActiveByDoctor(doctor.Id).ToList();
+
+        foreach (var slot in doctor.Availability.Where(s => s.Start.Date == date.Date).OrderBy(s => s.Start))
+        {
+            for (var start = slot.Start; start + service.Duration <= slot.End; start += service.Duration)
+            {
+                var end = start + service.Duration;
+
+                if (start <= DateTime.Now) continue;
+                if (!doctor.Branch.IsOpenBetween(start, end)) continue;
+                if (booked.Any(a => a.Overlaps(start, end))) continue;
+
+                result.Add(start);
+            }
+        }
+
+        return result;
+    }
+
     public Appointment Book(Patient patient, Doctor doctor, MedicalService service, DateTime start)
     {
         var end = start + service.Duration;
@@ -53,6 +78,16 @@ public class AppointmentService
     public void Cancel(int appointmentId)
     {
         var appointment = GetOrThrow(appointmentId);
+        appointment.Cancel();
+        _repository.Update(appointment);
+    }
+
+    public void CancelByPatient(int appointmentId, int patientId)
+    {
+        var appointment = GetOrThrow(appointmentId);
+        if (appointment.PatientId != patientId)
+            throw new InvalidOperationException("You can only cancel your own appointments.");
+
         appointment.Cancel();
         _repository.Update(appointment);
     }

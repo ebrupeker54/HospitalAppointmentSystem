@@ -1,0 +1,110 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.BookAppointmentViewModel
+@{
+    ViewData["Title"] = "Book an Appointment";
+}
+
+<div class="page-header">
+    <div>
+        <h1>Book an Appointment</h1>
+        <p>Choose a branch, service and doctor, then pick an available time.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</div>
+
+<div class="panel-card mb-4">
+    <div class="panel-card-header"><i class="bi bi-funnel"></i> Appointment Details</div>
+    <div class="p-4">
+        <form method="get" asp-action="Book" class="row g-3">
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">1. Branch</label>
+                <select name="branchId" class="form-select" onchange="this.form.submit()">
+                    <option value="">Select a branch</option>
+                    @foreach (var b in Model.Branches)
+                    {
+                        <option value="@b.Id" selected="@(b.Id == Model.BranchId)">@b.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">2. Service</label>
+                <select name="serviceId" class="form-select" onchange="this.form.submit()" disabled="@(Model.BranchId == null)">
+                    <option value="">Select a service</option>
+                    @foreach (var s in Model.Services)
+                    {
+                        <option value="@s.Id" selected="@(s.Id == Model.ServiceId)">@s.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">3. Doctor</label>
+                <select name="doctorId" class="form-select" onchange="this.form.submit()" disabled="@(Model.ServiceId == null)">
+                    <option value="">Select a doctor</option>
+                    @foreach (var d in Model.Doctors)
+                    {
+                        <option value="@d.Id" selected="@(d.Id == Model.DoctorId)">Dr. @d.FullName</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label">4. Date</label>
+                <input type="date" name="date" class="form-control"
+                       value="@Model.Date?.ToString("yyyy-MM-dd")"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       onchange="this.form.submit()"
+                       disabled="@(Model.DoctorId == null)" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.SelectedDoctor != null && Model.SelectedService != null && Model.Date != null)
+{
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="panel-card">
+                <div class="panel-card-header">
+                    <i class="bi bi-clock"></i> Available Times &middot; @Model.Date.Value.ToString("dd MMM yyyy, dddd")
+                </div>
+                @if (!Model.AvailableTimes.Any())
+                {
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <p class="mb-0">No available times on this day. Please try another date.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="time-grid p-4">
+                        @foreach (var t in Model.AvailableTimes)
+                        {
+                            <form asp-action="Book" method="post"
+                                  onsubmit="return confirm('Book an appointment at @t.ToString("HH:mm")?');">
+                                <input type="hidden" name="doctorId" value="@Model.SelectedDoctor.Id" />
+                                <input type="hidden" name="serviceId" value="@Model.SelectedService.Id" />
+                                <input type="hidden" name="startTime" value="@t.ToString("s")" />
+                                <button type="submit" class="time-slot">@t.ToString("HH:mm")</button>
+                            </form>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-card">
+                <div class="panel-card-header"><i class="bi bi-receipt"></i> Summary</div>
+                <div class="px-4 py-2">
+                    <div class="summary-row"><span>Doctor</span><span>Dr. @Model.SelectedDoctor.FullName</span></div>
+                    <div class="summary-row"><span>Specialty</span><span>@Model.SelectedDoctor.Specialty</span></div>
+                    <div class="summary-row"><span>Branch</span><span>@Model.SelectedDoctor.Branch?.Name</span></div>
+                    <div class="summary-row"><span>Service</span><span>@Model.SelectedService.Name</span></div>
+                    <div class="summary-row"><span>Duration</span><span>@Model.SelectedService.Duration.TotalMinutes min</span></div>
+                    <div class="summary-row"><span>Price</span><span>@Model.SelectedService.Price.ToString("N2") TL</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

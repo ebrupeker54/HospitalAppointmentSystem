@@ -13,9 +13,9 @@
         <h1>My Appointments</h1>
         <p>Welcome back, @User.Identity?.Name</p>
     </div>
-    <button class="btn btn-brand" disabled title="Coming soon">
+    <a asp-action="Book" class="btn btn-brand">
         <i class="bi bi-plus-lg me-1"></i> Book Appointment
-    </button>
+    </a>
 </div>
 
 <div class="row g-3 mb-4">
@@ -46,6 +46,7 @@
         <div class="empty-state">
             <i class="bi bi-calendar-x"></i>
             <p class="mb-0">You have no appointments yet.</p>
+            <a asp-action="Book" class="btn btn-brand mt-3">Book your first appointment</a>
         </div>
     }
     else
@@ -53,7 +54,7 @@
         <div class="table-responsive">
             <table class="table table-modern align-middle">
                 <thead>
-                    <tr><th>Date</th><th>Doctor</th><th>Service</th><th>Price</th><th>Status</th></tr>
+                    <tr><th>Date</th><th>Doctor</th><th>Service</th><th>Price</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
                     @foreach (var a in Model)
@@ -64,7 +65,7 @@
                                 <small class="text-muted">@a.StartTime.ToString("HH:mm") - @a.EndTime.ToString("HH:mm")</small>
                             </td>
                             <td>
-                                <div class="cell-main">@a.Doctor?.FullName</div>
+                                <div class="cell-main">Dr. @a.Doctor?.FullName</div>
                                 <small class="text-muted">@a.Doctor?.Branch?.Name</small>
                             </td>
                             <td>
@@ -73,6 +74,17 @@
                             </td>
                             <td>@a.Price.ToString("N2") TL</td>
                             <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
+                            <td class="text-end">
+                                @if (a.IsActive && a.StartTime > DateTime.Now)
+                                {
+                                    <form asp-action="Cancel" asp-route-id="@a.Id" method="post"
+                                          onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-x-lg me-1"></i>Cancel
+                                        </button>
+                                    </form>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>

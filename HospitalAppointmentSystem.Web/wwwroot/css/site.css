@@ -403,3 +403,65 @@ a {
     color: var(--muted);
     font-size: .9rem;
 }
+
+/* ---------- Booking ---------- */
+.form-select {
+    border-radius: 10px;
+    padding-top: .65rem;
+    padding-bottom: .65rem;
+    border-color: #cbd5e1;
+}
+
+    .form-select:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 .2rem rgba(13, 148, 136, .15);
+    }
+
+.time-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.time-slot {
+    border: 1px solid var(--brand);
+    background: #fff;
+    color: var(--brand-dark);
+    font-weight: 600;
+    border-radius: 10px;
+    padding: .55rem 1rem;
+    min-width: 86px;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+
+    .time-slot:hover {
+        background: var(--brand);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .7rem 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+    .summary-row:last-child {
+        border-bottom: none;
+    }
+
+    .summary-row span:first-child {
+        color: var(--muted);
+    }
+
+    .summary-row span:last-child {
+        font-weight: 600;
+        text-align: right;
+    }
+
+.alert {
+    border-radius: 12px;
+    border: none;
+}
