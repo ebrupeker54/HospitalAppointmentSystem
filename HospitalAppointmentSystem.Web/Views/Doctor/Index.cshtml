@@ -1,49 +1,95 @@
 ﻿@model HospitalAppointmentSystem.Web.ViewModels.DoctorDashboardViewModel
 @using HospitalAppointmentSystem.Web.Helpers
+@using HospitalAppointmentSystem.Web.Models
 @{
     ViewData["Title"] = "Doctor Panel";
+    var pending = Model.Appointments.Count(a => a.Status == AppointmentStatus.Pending);
+    var today = Model.Appointments.Count(a => a.IsActive && a.StartTime.Date == DateTime.Today);
 }
 
-<h2>Doctor Panel</h2>
-<p class="text-muted">Welcome, @User.Identity?.Name</p>
+<div class="page-header">
+    <div>
+        <h1>Doctor Panel</h1>
+        <p>Welcome, @User.Identity?.Name</p>
+    </div>
+</div>
 
-<div class="row">
-    <div class="col-lg-8 mb-4">
-        <h4>Appointments</h4>
-        @if (!Model.Appointments.Any())
-        {
-            <div class="alert alert-info">No appointments yet.</div>
-        }
-        else
-        {
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr><th>Date</th><th>Patient</th><th>Service</th><th>Status</th></tr>
-                </thead>
-                <tbody>
-                    @foreach (var a in Model.Appointments)
-                    {
-                        <tr>
-                            <td>@a.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
-                            <td>@a.Patient?.FullName</td>
-                            <td>@a.MedicalService?.Name</td>
-                            <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="stat-card stat-amber">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="stat-value">@pending</div><div class="stat-label">Pending Requests</div></div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
+            <div><div class="stat-value">@today</div><div class="stat-label">Today's Appointments</div></div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card stat-violet">
+            <div class="stat-icon"><i class="bi bi-clock"></i></div>
+            <div><div class="stat-value">@Model.UpcomingSlots.Count</div><div class="stat-label">Next Available Slots</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-card">
+            <div class="panel-card-header"><i class="bi bi-people"></i> Appointments</div>
+            @if (!Model.Appointments.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">No appointments yet.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle">
+                        <thead>
+                            <tr><th>Date</th><th>Patient</th><th>Service</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Appointments)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="cell-main">@a.StartTime.ToString("dd MMM yyyy")</div>
+                                        <small class="text-muted">@a.StartTime.ToString("HH:mm") - @a.EndTime.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>@a.Patient?.FullName</td>
+                                    <td>@a.MedicalService?.Name</td>
+                                    <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
     </div>
 
     <div class="col-lg-4">
-        <h4>Upcoming Availability</h4>
-        <ul class="list-group">
-            @foreach (var s in Model.UpcomingSlots)
+        <div class="panel-card">
+            <div class="panel-card-header"><i class="bi bi-calendar-week"></i> Upcoming Availability</div>
+            @if (!Model.UpcomingSlots.Any())
             {
-                <li class="list-group-item">
-                    @s.Start.ToString("dd.MM.yyyy ddd") &middot; @s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")
-                </li>
+                <div class="empty-state"><p class="mb-0">No upcoming slots.</p></div>
             }
-        </ul>
+            else
+            {
+                @foreach (var s in Model.UpcomingSlots)
+                {
+                    <div class="slot-item">
+                        <span>@s.Start.ToString("dd MMM, ddd")</span>
+                        <span class="slot-time">@s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")</span>
+                    </div>
+                }
+            }
+        </div>
     </div>
 </div>
