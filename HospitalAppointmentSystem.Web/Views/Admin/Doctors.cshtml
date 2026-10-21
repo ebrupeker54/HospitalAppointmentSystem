@@ -1,16 +1,16 @@
 ﻿@model List<HospitalAppointmentSystem.Web.Models.Doctor>
 @{
-    ViewData["Title"] = "Doctors";
+    ViewData["Title"] = "Doktorlar";
 }
 
 <partial name="_AdminNav" />
 
 <div class="page-header">
     <div>
-        <h1>Doctors</h1>
-        <p>Register doctors and assign them to branches, departments and services.</p>
+        <h1>Doktorlar</h1>
+        <p>Doktorları kaydedin; şube, bölüm ve hizmet atamalarını yapın.</p>
     </div>
-    <a asp-action="CreateDoctor" class="btn btn-brand"><i class="bi bi-person-plus me-1"></i> New Doctor</a>
+    <a asp-action="CreateDoctor" class="btn btn-brand"><i class="bi bi-person-plus me-1"></i> Yeni Doktor</a>
 </div>
 
 <div class="panel-card">
@@ -18,7 +18,7 @@
     {
         <div class="empty-state">
             <i class="bi bi-person-badge"></i>
-            <p class="mb-0">No doctors registered yet.</p>
+            <p class="mb-0">Henüz kayıtlı doktor yok.</p>
         </div>
     }
     else
@@ -26,7 +26,7 @@
         <div class="table-responsive">
             <table class="table table-modern align-middle">
                 <thead>
-                    <tr><th>Doctor</th><th>Specialty</th><th>Branch</th><th>Department</th><th>Services</th><th></th></tr>
+                    <tr><th>Doktor</th><th>Uzmanlık</th><th>Şube</th><th>Bölüm</th><th>Hizmetler</th><th></th></tr>
                 </thead>
                 <tbody>
                     @foreach (var d in Model)
@@ -55,7 +55,7 @@
                             </td>
                             <td class="text-end">
                                 <a asp-action="EditDoctor" asp-route-id="@d.Id" class="btn btn-sm btn-light">
-                                    <i class="bi bi-pencil me-1"></i>Edit
+                                    <i class="bi bi-pencil me-1"></i>Düzenle
                                 </a>
                             </td>
                         </tr>

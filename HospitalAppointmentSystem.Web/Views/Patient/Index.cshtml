@@ -1,8 +1,7 @@
 ﻿@model List<HospitalAppointmentSystem.Web.Models.Appointment>
-@using HospitalAppointmentSystem.Web.Helpers
 @using HospitalAppointmentSystem.Web.Models
 @{
-    ViewData["Title"] = "My Appointments";
+    ViewData["Title"] = "Randevularım";
     var upcoming = Model.Count(a => a.IsActive && a.StartTime > DateTime.Now);
     var pending = Model.Count(a => a.Status == AppointmentStatus.Pending);
     var completed = Model.Count(a => a.Status == AppointmentStatus.Completed);
@@ -10,11 +9,11 @@
 
 <div class="page-header">
     <div>
-        <h1>My Appointments</h1>
-        <p>Welcome back, @User.Identity?.Name</p>
+        <h1>Randevularım</h1>
+        <p>Tekrar hoş geldiniz, @User.Identity?.Name</p>
     </div>
     <a asp-action="Book" class="btn btn-brand">
-        <i class="bi bi-plus-lg me-1"></i> Book Appointment
+        <i class="bi bi-plus-lg me-1"></i> Randevu Al
     </a>
 </div>
 
@@ -22,31 +21,31 @@
     <div class="col-sm-4">
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-calendar-event"></i></div>
-            <div><div class="stat-value">@upcoming</div><div class="stat-label">Upcoming</div></div>
+            <div><div class="stat-value">@upcoming</div><div class="stat-label">Yaklaşan</div></div>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card stat-amber">
             <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-            <div><div class="stat-value">@pending</div><div class="stat-label">Waiting for Approval</div></div>
+            <div><div class="stat-value">@pending</div><div class="stat-label">Onay Bekleyen</div></div>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card stat-blue">
             <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
-            <div><div class="stat-value">@completed</div><div class="stat-label">Completed</div></div>
+            <div><div class="stat-value">@completed</div><div class="stat-label">Tamamlanan</div></div>
         </div>
     </div>
 </div>
 
 <div class="panel-card">
-    <div class="panel-card-header"><i class="bi bi-list-ul"></i> Appointment History</div>
+    <div class="panel-card-header"><i class="bi bi-list-ul"></i> Randevu Geçmişi</div>
     @if (!Model.Any())
     {
         <div class="empty-state">
             <i class="bi bi-calendar-x"></i>
-            <p class="mb-0">You have no appointments yet.</p>
-            <a asp-action="Book" class="btn btn-brand mt-3">Book your first appointment</a>
+            <p class="mb-0">Henüz bir randevunuz yok.</p>
+            <a asp-action="Book" class="btn btn-brand mt-3">İlk randevunuzu alın</a>
         </div>
     }
     else
@@ -54,7 +53,7 @@
         <div class="table-responsive">
             <table class="table table-modern align-middle">
                 <thead>
-                    <tr><th>Date</th><th>Doctor</th><th>Service</th><th>Price</th><th>Status</th><th></th></tr>
+                    <tr><th>Tarih</th><th>Doktor</th><th>Hizmet</th><th>Ücret</th><th>Durum</th><th></th></tr>
                 </thead>
                 <tbody>
                     @foreach (var a in Model)
@@ -70,11 +69,11 @@
                             </td>
                             <td>
                                 <div>@a.MedicalService?.Name</div>
-                                <small class="text-muted">@a.Duration.TotalMinutes min</small>
+                                <small class="text-muted">@a.Duration.TotalMinutes dk</small>
                             </td>
                             <td>@a.Price.ToString("N2") TL</td>
                             <td>
-                                <span class="badge @a.Status.ToBadgeClass()">@a.Status</span>
+                                <span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span>
                                 @if (a.Status == AppointmentStatus.Rejected && !string.IsNullOrEmpty(a.RejectionReason))
                                 {
                                     <div class="small text-muted mt-1">@a.RejectionReason</div>
@@ -84,9 +83,9 @@
                                 @if (a.IsActive && a.StartTime > DateTime.Now)
                                 {
                                     <form asp-action="Cancel" asp-route-id="@a.Id" method="post"
-                                          onsubmit="return confirm('Are you sure you want to cancel this appointment?');">
+                                          onsubmit="return confirm('Bu randevuyu iptal etmek istediğinizden emin misiniz?');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-x-lg me-1"></i>Cancel
+                                            <i class="bi bi-x-lg me-1"></i>İptal Et
                                         </button>
                                     </form>
                                 }

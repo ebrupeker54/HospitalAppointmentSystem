@@ -10,61 +10,61 @@
         <h1>@Model.Branch.Name</h1>
         <p>@Model.Branch.Institution?.Name</p>
     </div>
-    <a asp-action="Institutions" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Back</a>
+    <a asp-action="Institutions" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Geri</a>
 </div>
 
 <div class="row g-4">
     <div class="col-lg-6">
         <div class="panel-card mb-4">
-            <div class="panel-card-header"><i class="bi bi-info-circle"></i> Branch Information</div>
+            <div class="panel-card-header"><i class="bi bi-info-circle"></i> Şube Bilgileri</div>
             <form asp-action="UpdateBranch" asp-route-id="@Model.Branch.Id" method="post" class="p-4">
                 <div class="mb-3">
-                    <label class="form-label">Name</label>
+                    <label class="form-label">Şube Adı</label>
                     <input name="name" value="@Model.Branch.Name" class="form-control" required />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Address</label>
+                    <label class="form-label">Adres</label>
                     <input name="address" value="@Model.Branch.Address" class="form-control" />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Phone</label>
+                    <label class="form-label">Telefon</label>
                     <input name="phoneNumber" value="@Model.Branch.PhoneNumber" class="form-control" />
                 </div>
-                <button type="submit" class="btn btn-brand">Save Changes</button>
+                <button type="submit" class="btn btn-brand">Değişiklikleri Kaydet</button>
             </form>
         </div>
 
         <div class="panel-card">
-            <div class="panel-card-header"><i class="bi bi-diagram-3"></i> Departments</div>
+            <div class="panel-card-header"><i class="bi bi-diagram-3"></i> Bölümler</div>
             <form asp-action="AddDepartment" method="post" class="d-flex gap-2 p-3 border-bottom">
                 <input type="hidden" name="branchId" value="@Model.Branch.Id" />
-                <input name="name" class="form-control" placeholder="New department name" required />
-                <button type="submit" class="btn btn-brand text-nowrap"><i class="bi bi-plus-lg me-1"></i>Add</button>
+                <input name="name" class="form-control" placeholder="Yeni bölüm adı" required />
+                <button type="submit" class="btn btn-brand text-nowrap"><i class="bi bi-plus-lg me-1"></i>Ekle</button>
             </form>
 
             @if (!Model.Branch.Departments.Any())
             {
-                <div class="empty-state"><p class="mb-0">No departments yet.</p></div>
+                    <div class="empty-state"><p class="mb-0">Henüz bölüm yok.</p></div>
             }
             else
             {
                 @foreach (var d in Model.Branch.Departments.OrderBy(d => d.Name))
                 {
                     var doctorCount = Model.DoctorCounts.GetValueOrDefault(d.Id);
-                    <div class="slot-item">
-                        <div>
-                            <div class="cell-main">@d.Name</div>
-                            <small class="text-muted">@doctorCount doctor(s)</small>
-                        </div>
-                        <form asp-action="RemoveDepartment" method="post"
-                              onsubmit="return confirm('Remove the @d.Name department?');">
-                            <input type="hidden" name="branchId" value="@Model.Branch.Id" />
-                            <input type="hidden" name="departmentId" value="@d.Id" />
-                            <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
-                    </div>
+                            <div class="slot-item">
+                                <div>
+                                    <div class="cell-main">@d.Name</div>
+                                    <small class="text-muted">@doctorCount doktor</small>
+                                </div>
+                                <form asp-action="RemoveDepartment" method="post"
+                                      onsubmit="return confirm('@d.Name bölümü silinsin mi?');">
+                                    <input type="hidden" name="branchId" value="@Model.Branch.Id" />
+                                    <input type="hidden" name="departmentId" value="@d.Id" />
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                 }
             }
         </div>
@@ -72,44 +72,44 @@
 
     <div class="col-lg-6">
         <div class="panel-card">
-            <div class="panel-card-header"><i class="bi bi-clock"></i> Working Hours</div>
+            <div class="panel-card-header"><i class="bi bi-clock"></i> Çalışma Saatleri</div>
             <form asp-action="UpdateSchedule" method="post">
                 <input type="hidden" name="branchId" value="@Model.Branch.Id" />
                 <div class="table-responsive">
                     <table class="table table-modern align-middle">
                         <thead>
-                            <tr><th>Day</th><th>Open</th><th>From</th><th>To</th></tr>
+                            <tr><th>Gün</th><th>Açık</th><th>Açılış</th><th>Kapanış</th></tr>
                         </thead>
                         <tbody>
                             @for (var i = 0; i < Model.Schedule.Count; i++)
                             {
                                 var row = Model.Schedule[i];
-                                <tr>
-                                    <td class="cell-main">
-                                        @row.Day
-                                        <input type="hidden" name="schedule[@i].Day" value="@row.Day" />
-                                    </td>
-                                    <td>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="schedule[@i].IsOpen"
-                                                   value="true" checked="@row.IsOpen" />
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <input type="time" name="schedule[@i].OpenTime" class="form-control form-control-sm"
-                                               value="@(row.OpenTime?.ToString(@"hh\:mm"))" step="900" />
-                                    </td>
-                                    <td>
-                                        <input type="time" name="schedule[@i].CloseTime" class="form-control form-control-sm"
-                                               value="@(row.CloseTime?.ToString(@"hh\:mm"))" step="900" />
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td class="cell-main">
+                                        @row.Day.ToDisplay()
+                                            <input type="hidden" name="schedule[@i].Day" value="@row.Day" />
+                                        </td>
+                                        <td>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="schedule[@i].IsOpen"
+                                                       value="true" checked="@row.IsOpen" />
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="time" name="schedule[@i].OpenTime" class="form-control form-control-sm"
+                                                   value="@(row.OpenTime?.ToString(@"hh\:mm"))" step="900" />
+                                        </td>
+                                        <td>
+                                            <input type="time" name="schedule[@i].CloseTime" class="form-control form-control-sm"
+                                                   value="@(row.CloseTime?.ToString(@"hh\:mm"))" step="900" />
+                                        </td>
+                                    </tr>
                             }
                         </tbody>
                     </table>
                 </div>
                 <div class="p-3 border-top">
-                    <button type="submit" class="btn btn-brand"><i class="bi bi-save me-1"></i>Save Working Hours</button>
+                    <button type="submit" class="btn btn-brand"><i class="bi bi-save me-1"></i>Çalışma Saatlerini Kaydet</button>
                 </div>
             </form>
         </div>

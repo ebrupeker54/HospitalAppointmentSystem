@@ -5,11 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
+using HospitalAppointmentSystem.Web.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+    options.ModelBinderProviders.Insert(0, new InvariantDecimalModelBinderProvider()));
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -48,7 +49,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-var culture = new CultureInfo("en-US");
+var culture = new CultureInfo("tr-TR");
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture(culture),

@@ -15,7 +15,7 @@ public class WorkingHours
     public WorkingHours(DayOfWeek day, TimeOnly openTime, TimeOnly closeTime)
     {
         if (closeTime <= openTime)
-            throw new ArgumentException("Closing time must be after opening time.");
+            throw new ArgumentException("Kapanış saati açılış saatinden sonra olmalıdır.");
 
         Day = day;
         OpenTime = openTime;

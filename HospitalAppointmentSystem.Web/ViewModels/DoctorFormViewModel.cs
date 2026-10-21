@@ -7,28 +7,38 @@ public class DoctorFormViewModel
 {
     public int? Id { get; set; }
 
-    [Required, Display(Name = "First Name")]
+    [Required(ErrorMessage = "Ad zorunludur.")]
+    [Display(Name = "Ad")]
     public string FirstName { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Last Name")]
+    [Required(ErrorMessage = "Soyad zorunludur.")]
+    [Display(Name = "Soyad")]
     public string LastName { get; set; } = string.Empty;
 
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "E-posta adresi zorunludur.")]
+    [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
+    [Display(Name = "E-posta")]
     public string Email { get; set; } = string.Empty;
 
-    [Required, Phone, Display(Name = "Phone Number")]
+    [Required(ErrorMessage = "Telefon numarası zorunludur.")]
+    [Phone(ErrorMessage = "Geçerli bir telefon numarası giriniz.")]
+    [Display(Name = "Telefon")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Required]
+    [Required(ErrorMessage = "Uzmanlık alanı zorunludur.")]
+    [Display(Name = "Uzmanlık Alanı")]
     public string Specialty { get; set; } = string.Empty;
 
-    [DataType(DataType.Password), MinLength(6)]
+    [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Başlangıç Şifresi")]
     public string? Password { get; set; }
 
-    [Required(ErrorMessage = "Please select a branch."), Display(Name = "Branch")]
+    [Required(ErrorMessage = "Lütfen bir şube seçin.")]
+    [Display(Name = "Şube")]
     public int? BranchId { get; set; }
 
-    [Display(Name = "Department")]
+    [Display(Name = "Bölüm")]
     public int? DepartmentId { get; set; }
 
     public List<int> ServiceIds { get; set; } = new();

@@ -1,16 +1,15 @@
 ﻿@model HospitalAppointmentSystem.Web.ViewModels.DoctorDashboardViewModel
-@using HospitalAppointmentSystem.Web.Helpers
 @using HospitalAppointmentSystem.Web.Models
 @{
-    ViewData["Title"] = "Doctor Panel";
+    ViewData["Title"] = "Doktor Paneli";
     var pending = Model.Appointments.Count(a => a.Status == AppointmentStatus.Pending);
     var today = Model.Appointments.Count(a => a.IsActive && a.StartTime.Date == DateTime.Today);
 }
 
 <div class="page-header">
     <div>
-        <h1>Doctor Panel</h1>
-        <p>Welcome, Dr. @User.Identity?.Name</p>
+        <h1>Doktor Paneli</h1>
+        <p>Hoş geldiniz, Dr. @User.Identity?.Name</p>
     </div>
 </div>
 
@@ -18,19 +17,19 @@
     <div class="col-sm-4">
         <div class="stat-card stat-amber">
             <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
-            <div><div class="stat-value">@pending</div><div class="stat-label">Pending Requests</div></div>
+            <div><div class="stat-value">@pending</div><div class="stat-label">Onay Bekleyen Talepler</div></div>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card">
             <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
-            <div><div class="stat-value">@today</div><div class="stat-label">Today's Appointments</div></div>
+            <div><div class="stat-value">@today</div><div class="stat-label">Bugünkü Randevular</div></div>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="stat-card stat-violet">
             <div class="stat-icon"><i class="bi bi-clock"></i></div>
-            <div><div class="stat-value">@Model.UpcomingSlots.Count</div><div class="stat-label">Upcoming Slots</div></div>
+            <div><div class="stat-value">@Model.UpcomingSlots.Count</div><div class="stat-label">Yaklaşan Uygunluklar</div></div>
         </div>
     </div>
 </div>
@@ -38,12 +37,12 @@
 <div class="row g-4">
     <div class="col-lg-8">
         <div class="panel-card">
-            <div class="panel-card-header"><i class="bi bi-people"></i> Appointments</div>
+            <div class="panel-card-header"><i class="bi bi-people"></i> Randevular</div>
             @if (!Model.Appointments.Any())
             {
                 <div class="empty-state">
                     <i class="bi bi-inbox"></i>
-                    <p class="mb-0">No appointments yet.</p>
+                    <p class="mb-0">Henüz randevu yok.</p>
                 </div>
             }
             else
@@ -51,7 +50,7 @@
                 <div class="table-responsive">
                     <table class="table table-modern align-middle">
                         <thead>
-                            <tr><th>Date</th><th>Patient</th><th>Service</th><th>Status</th><th></th></tr>
+                            <tr><th>Tarih</th><th>Hasta</th><th>Hizmet</th><th>Durum</th><th></th></tr>
                         </thead>
                         <tbody>
                             @foreach (var a in Model.Appointments)
@@ -63,29 +62,29 @@
                                     </td>
                                     <td>@a.Patient?.FullName</td>
                                     <td>@a.MedicalService?.Name</td>
-                                    <td><span class="badge @a.Status.ToBadgeClass()">@a.Status</span></td>
+                                    <td><span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span></td>
                                     <td class="text-end">
                                         @if (a.Status == AppointmentStatus.Pending)
                                         {
                                             <div class="d-flex gap-2 justify-content-end">
                                                 <form asp-action="Approve" asp-route-id="@a.Id" method="post">
                                                     <button type="submit" class="btn btn-sm btn-success">
-                                                        <i class="bi bi-check-lg me-1"></i>Approve
+                                                        <i class="bi bi-check-lg me-1"></i>Onayla
                                                     </button>
                                                 </form>
                                                 <button type="button" class="btn btn-sm btn-outline-danger"
                                                         data-bs-toggle="modal" data-bs-target="#rejectModal"
                                                         data-id="@a.Id" data-patient="@a.Patient?.FullName">
-                                                    <i class="bi bi-x-lg me-1"></i>Reject
+                                                    <i class="bi bi-x-lg me-1"></i>Reddet
                                                 </button>
                                             </div>
                                         }
                                         else if (a.Status == AppointmentStatus.Approved)
                                         {
                                             <form asp-action="Complete" asp-route-id="@a.Id" method="post"
-                                                  onsubmit="return confirm('Mark this appointment as completed?');">
+                                                  onsubmit="return confirm('Bu randevu tamamlandı olarak işaretlensin mi?');">
                                                 <button type="submit" class="btn btn-sm btn-outline-brand">
-                                                    <i class="bi bi-check2-all me-1"></i>Complete
+                                                    <i class="bi bi-check2-all me-1"></i>Tamamla
                                                 </button>
                                             </form>
                                         }
@@ -101,31 +100,31 @@
 
     <div class="col-lg-4">
         <div class="panel-card">
-            <div class="panel-card-header"><i class="bi bi-calendar-week"></i> My Availability</div>
+            <div class="panel-card-header"><i class="bi bi-calendar-week"></i> Uygunluk Saatlerim</div>
 
             <form asp-action="AddAvailability" method="post" class="p-3 border-bottom">
-                <label class="form-label small">Date</label>
+                <label class="form-label small">Tarih</label>
                 <input type="date" name="date" class="form-control mb-2"
                        min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                 <div class="row g-2 mb-3">
                     <div class="col">
-                        <label class="form-label small">From</label>
+                        <label class="form-label small">Başlangıç</label>
                         <input type="time" name="startTime" value="09:00" step="900" class="form-control" required />
                     </div>
                     <div class="col">
-                        <label class="form-label small">To</label>
+                        <label class="form-label small">Bitiş</label>
                         <input type="time" name="endTime" value="12:00" step="900" class="form-control" required />
                     </div>
                 </div>
                 <button type="submit" class="btn btn-brand w-100">
-                    <i class="bi bi-plus-lg me-1"></i>Add Slot
+                    <i class="bi bi-plus-lg me-1"></i>Aralık Ekle
                 </button>
             </form>
 
             <div class="slot-list">
                 @if (!Model.UpcomingSlots.Any())
                 {
-                    <div class="empty-state"><p class="mb-0">No upcoming slots.</p></div>
+                    <div class="empty-state"><p class="mb-0">Yaklaşan uygunluk aralığı yok.</p></div>
                 }
                 else
                 {
@@ -136,8 +135,8 @@
                             <div class="d-flex align-items-center gap-2">
                                 <span class="slot-time">@s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")</span>
                                 <form asp-action="RemoveAvailability" asp-route-id="@s.Id" method="post"
-                                      onsubmit="return confirm('Remove this slot?');">
-                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                                      onsubmit="return confirm('Bu aralık silinsin mi?');">
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Sil">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
@@ -155,19 +154,19 @@
         <div class="modal-content">
             <form asp-action="Reject" method="post">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="rejectModalLabel">Reject Appointment</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="rejectModalLabel">Randevuyu Reddet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted">Patient: <strong id="rejectPatient"></strong></p>
+                    <p class="text-muted">Hasta: <strong id="rejectPatient"></strong></p>
                     <input type="hidden" name="id" id="rejectId" />
-                    <label class="form-label">Reason</label>
+                    <label class="form-label">Ret Gerekçesi</label>
                     <textarea name="reason" class="form-control" rows="3" required
-                              placeholder="e.g. I will be in surgery at that time. Please choose another slot."></textarea>
+                              placeholder="Örn. O saatte ameliyatta olacağım. Lütfen başka bir saat seçin."></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger">Reject</button>
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">Reddet</button>
                 </div>
             </form>
         </div>

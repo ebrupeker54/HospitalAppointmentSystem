@@ -15,7 +15,7 @@ public class AvailabilitySlot
     public AvailabilitySlot(DateTime start, DateTime end)
     {
         if (end <= start)
-            throw new ArgumentException("Slot end must be after slot start.");
+            throw new ArgumentException("Bitiş saati başlangıç saatinden sonra olmalıdır.");
 
         Start = start;
         End = end;

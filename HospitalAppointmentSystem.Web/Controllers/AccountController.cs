@@ -34,7 +34,7 @@ public class AccountController : Controller
         var user = _authService.ValidateCredentials(model.Email, model.Password);
         if (user == null)
         {
-            ModelState.AddModelError(string.Empty, "Invalid email or password.");
+            ModelState.AddModelError(string.Empty, "E-posta adresi veya şifre hatalı.");
             return View(model);
         }
 
@@ -87,7 +87,8 @@ public class AccountController : Controller
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.FullName),
             new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new("RoleDescription", user.GetRoleDescription())
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

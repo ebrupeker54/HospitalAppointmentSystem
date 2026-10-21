@@ -10,6 +10,6 @@ public class Admin : User
     public override string DashboardController => "Admin";
     public override string GetRoleDescription()
     {
-        return "Admin - can manage hospitals, branches, services and staff";
+        return "Yönetici - kurumları, şubeleri, hizmetleri ve personeli yönetebilir";
     }
 }

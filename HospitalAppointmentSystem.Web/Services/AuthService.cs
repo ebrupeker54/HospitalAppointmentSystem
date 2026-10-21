@@ -26,10 +26,10 @@ public class AuthService
         var normalizedEmail = email.Trim().ToLowerInvariant();
 
         if (_context.Users.Any(u => u.Email == normalizedEmail))
-            throw new InvalidOperationException("An account with this email already exists.");
+            throw new InvalidOperationException("Bu e-posta adresiyle kayıtlı bir hesap zaten var.");
 
         if (_context.Patients.Any(p => p.NationalId == nationalId))
-            throw new InvalidOperationException("A patient with this National ID is already registered.");
+            throw new InvalidOperationException("Bu T.C. kimlik numarasıyla kayıtlı bir hasta zaten var.");
 
         var patient = new Patient
         {

@@ -14,6 +14,6 @@ public class Patient : User
 
     public override string GetRoleDescription()
     {
-        return "Patient - can book and manage appointments";
+        return "Hasta - randevu alabilir ve randevularını yönetebilir";
     }
 }

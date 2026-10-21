@@ -1,15 +1,16 @@
 ﻿@model List<HospitalAppointmentSystem.Web.Models.Institution>
+@using System.Globalization
 @using HospitalAppointmentSystem.Web.Models
 @{
-    ViewData["Title"] = "Services";
+    ViewData["Title"] = "Hizmetler";
 }
 
 <partial name="_AdminNav" />
 
 <div class="page-header">
     <div>
-        <h1>Medical Services</h1>
-        <p>Define the services each institution offers, with their duration and price.</p>
+        <h1>Sağlık Hizmetleri</h1>
+        <p>Her kurumun sunduğu hizmetleri, sürelerini ve ücretlerini tanımlayın.</p>
     </div>
 </div>
 
@@ -21,7 +22,7 @@
             <span>@institution.Name</span>
             <button class="btn btn-sm btn-outline-brand ms-auto" type="button"
                     data-bs-toggle="collapse" data-bs-target="#new-service-@institution.Id">
-                <i class="bi bi-plus-lg me-1"></i>Add Service
+                <i class="bi bi-plus-lg me-1"></i>Hizmet Ekle
             </button>
         </div>
 
@@ -29,56 +30,56 @@
             <form asp-action="CreateService" method="post" class="row g-3 p-3 border-bottom bg-light">
                 <input type="hidden" name="institutionId" value="@institution.Id" />
                 <div class="col-md-4">
-                    <label class="form-label small">Name</label>
+                    <label class="form-label small">Hizmet Adı</label>
                     <input name="name" class="form-control" required />
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small">Category</label>
+                    <label class="form-label small">Kategori</label>
                     <select name="category" class="form-select">
                         @foreach (var c in Enum.GetValues<ServiceCategory>())
                         {
-                            <option value="@c">@c</option>
+                            <option value="@c">@c.ToDisplay()</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small">Duration (min)</label>
+                    <label class="form-label small">Süre (dk)</label>
                     <input name="durationMinutes" type="number" min="5" step="5" value="20" class="form-control" required />
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small">Price (TL)</label>
+                    <label class="form-label small">Ücret (TL)</label>
                     <input name="price" type="number" min="0" step="0.01" value="0" class="form-control" required />
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
-                    <button type="submit" class="btn btn-brand w-100">Add</button>
+                    <button type="submit" class="btn btn-brand w-100">Ekle</button>
                 </div>
             </form>
         </div>
 
         @if (!institution.Services.Any())
         {
-            <div class="empty-state"><p class="mb-0">No services defined yet.</p></div>
+            <div class="empty-state"><p class="mb-0">Henüz hizmet tanımlanmadı.</p></div>
         }
         else
         {
             <div class="table-responsive">
                 <table class="table table-modern align-middle">
                     <thead>
-                        <tr><th>Service</th><th>Category</th><th>Duration</th><th>Price</th><th>Doctors</th><th></th></tr>
+                        <tr><th>Hizmet</th><th>Kategori</th><th>Süre</th><th>Ücret</th><th>Doktor</th><th></th></tr>
                     </thead>
                     <tbody>
                         @foreach (var s in institution.Services.OrderBy(s => s.Name))
                         {
                             <tr>
                                 <td class="cell-main">@s.Name</td>
-                                <td><span class="badge service-badge">@s.Category</span></td>
-                                <td>@s.Duration.TotalMinutes min</td>
+                                <td><span class="badge service-badge">@s.Category.ToDisplay()</span></td>
+                                <td>@s.Duration.TotalMinutes dk</td>
                                 <td>@s.Price.ToString("N2") TL</td>
                                 <td>@s.Doctors.Count</td>
                                 <td class="text-end">
                                     <button class="btn btn-sm btn-light" type="button"
                                             data-bs-toggle="collapse" data-bs-target="#edit-service-@s.Id">
-                                        <i class="bi bi-pencil me-1"></i>Edit
+                                        <i class="bi bi-pencil me-1"></i>Düzenle
                                     </button>
                                 </td>
                             </tr>
@@ -86,30 +87,30 @@
                                 <td colspan="6" class="bg-light">
                                     <form asp-action="UpdateService" asp-route-id="@s.Id" method="post" class="row g-3">
                                         <div class="col-md-4">
-                                            <label class="form-label small">Name</label>
+                                            <label class="form-label small">Hizmet Adı</label>
                                             <input name="name" value="@s.Name" class="form-control" required />
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label small">Category</label>
+                                            <label class="form-label small">Kategori</label>
                                             <select name="category" class="form-select">
                                                 @foreach (var c in Enum.GetValues<ServiceCategory>())
                                                 {
-                                                    <option value="@c" selected="@(c == s.Category)">@c</option>
+                                                    <option value="@c" selected="@(c == s.Category)">@c.ToDisplay()</option>
                                                 }
                                             </select>
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label small">Duration (min)</label>
+                                            <label class="form-label small">Süre (dk)</label>
                                             <input name="durationMinutes" type="number" min="5" step="5"
                                                    value="@s.Duration.TotalMinutes" class="form-control" required />
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label small">Price (TL)</label>
+                                            <label class="form-label small">Ücret (TL)</label>
                                             <input name="price" type="number" min="0" step="0.01"
-                                                   value="@s.Price.ToString("0.00")" class="form-control" required />
+                                                   value="@s.Price.ToString("0.00", CultureInfo.InvariantCulture)" class="form-control" required />
                                         </div>
                                         <div class="col-md-1 d-flex align-items-end">
-                                            <button type="submit" class="btn btn-brand w-100">Save</button>
+                                            <button type="submit" class="btn btn-brand w-100">Kaydet</button>
                                         </div>
                                     </form>
                                 </td>

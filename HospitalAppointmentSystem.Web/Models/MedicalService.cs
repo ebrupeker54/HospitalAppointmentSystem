@@ -19,7 +19,7 @@ public class MedicalService
     public MedicalService(string name, ServiceCategory category, TimeSpan duration, decimal price)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Service name cannot be empty.");
+            throw new ArgumentException("Hizmet adı boş olamaz.");
 
         Name = name;
         Category = category;
@@ -29,7 +29,7 @@ public class MedicalService
     public void UpdateDetails(string name, ServiceCategory category)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Service name cannot be empty.");
+            throw new ArgumentException("Hizmet adı boş olamaz.");
 
         Name = name.Trim();
         Category = category;
@@ -38,9 +38,9 @@ public class MedicalService
     public void UpdatePricing(TimeSpan duration, decimal price)
     {
         if (duration <= TimeSpan.Zero)
-            throw new ArgumentException("Duration must be greater than zero.");
+            throw new ArgumentException("Süre sıfırdan büyük olmalıdır.");
         if (price < 0)
-            throw new ArgumentException("Price cannot be negative.");
+            throw new ArgumentException("Ücret negatif olamaz.");
 
         Duration = duration;
         Price = price;

@@ -47,24 +47,24 @@ public class DoctorController : Controller
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Approve(int id) =>
-        Handle(() => _appointmentService.ApproveByDoctor(id, CurrentDoctorId), "Appointment approved.");
+        Handle(() => _appointmentService.ApproveByDoctor(id, CurrentDoctorId), "Randevu onaylandı.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Reject(int id, string? reason) =>
-        Handle(() => _appointmentService.RejectByDoctor(id, CurrentDoctorId, reason ?? string.Empty), "Appointment rejected.");
+        Handle(() => _appointmentService.RejectByDoctor(id, CurrentDoctorId, reason ?? string.Empty), "Randevu reddedildi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Complete(int id) =>
-        Handle(() => _appointmentService.CompleteByDoctor(id, CurrentDoctorId), "Appointment marked as completed.");
+        Handle(() => _appointmentService.CompleteByDoctor(id, CurrentDoctorId), "Randevu tamamlandı olarak işaretlendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult AddAvailability(DateTime date, TimeSpan startTime, TimeSpan endTime) =>
         Handle(() => _availabilityService.AddSlot(CurrentDoctorId, date.Date + startTime, date.Date + endTime),
-            "Availability slot added.");
+            "Uygunluk aralığı eklendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult RemoveAvailability(int id) =>
-        Handle(() => _availabilityService.RemoveSlot(id, CurrentDoctorId), "Availability slot removed.");
+        Handle(() => _availabilityService.RemoveSlot(id, CurrentDoctorId), "Uygunluk aralığı silindi.");
 
     private IActionResult Handle(Action action, string successMessage)
     {

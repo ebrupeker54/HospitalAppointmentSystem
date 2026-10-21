@@ -5,22 +5,22 @@
 <ul class="nav admin-nav mb-4">
     <li class="nav-item">
         <a class="nav-link @(action == "Index" ? "active" : "")" asp-controller="Admin" asp-action="Index">
-            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            <i class="bi bi-speedometer2 me-1"></i> Genel Bakış
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link @(action is "Institutions" or "Branch" ? "active" : "")" asp-controller="Admin" asp-action="Institutions">
-            <i class="bi bi-buildings me-1"></i> Institutions &amp; Branches
+            <i class="bi bi-buildings me-1"></i> Kurumlar ve Şubeler
         </a>
     </li>
-        <li class="nav-item">
+    <li class="nav-item">
         <a class="nav-link @(action == "Services" ? "active" : "")" asp-controller="Admin" asp-action="Services">
-            <i class="bi bi-clipboard2-pulse me-1"></i> Services
+            <i class="bi bi-clipboard2-pulse me-1"></i> Hizmetler
         </a>
     </li>
     <li class="nav-item">
         <a class="nav-link @(action is "Doctors" or "CreateDoctor" or "EditDoctor" ? "active" : "")" asp-controller="Admin" asp-action="Doctors">
-            <i class="bi bi-person-badge me-1"></i> Doctors
+            <i class="bi bi-person-badge me-1"></i> Doktorlar
         </a>
     </li>
 </ul>

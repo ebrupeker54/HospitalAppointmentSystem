@@ -4,9 +4,13 @@ namespace HospitalAppointmentSystem.Web.ViewModels;
 
 public class LoginViewModel
 {
-    [Required, EmailAddress]
+    [Required(ErrorMessage = "E-posta adresi zorunludur.")]
+    [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz.")]
+    [Display(Name = "E-posta")]
     public string Email { get; set; } = string.Empty;
 
-    [Required, DataType(DataType.Password)]
+    [Required(ErrorMessage = "Şifre zorunludur.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Şifre")]
     public string Password { get; set; } = string.Empty;
 }

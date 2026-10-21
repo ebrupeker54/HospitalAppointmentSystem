@@ -2,6 +2,7 @@
 using HospitalAppointmentSystem.Web.Models;
 using HospitalAppointmentSystem.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using HospitalAppointmentSystem.Web.Helpers;
 
 namespace HospitalAppointmentSystem.Web.Services;
 
@@ -16,10 +17,10 @@ public class InstitutionService
 
     public void CreateInstitution(string name, InstitutionType type)
     {
-        name = RequireText(name, "Institution name");
+        name = RequireText(name, "Kurum adı");
 
         if (_context.Institutions.Any(i => i.Name.ToLower() == name.ToLower()))
-            throw new InvalidOperationException("An institution with this name already exists.");
+            throw new InvalidOperationException("Bu isimde bir kurum zaten var.");
 
         _context.Institutions.Add(new Institution { Name = name, Type = type });
         _context.SaveChanges();
@@ -27,13 +28,13 @@ public class InstitutionService
 
     public void UpdateInstitution(int id, string name, InstitutionType type)
     {
-        name = RequireText(name, "Institution name");
+        name = RequireText(name, "Kurum adı");
 
         var institution = _context.Institutions.Find(id)
-            ?? throw new KeyNotFoundException("Institution not found.");
+            ?? throw new KeyNotFoundException("Kurum bulunamadı.");
 
         if (_context.Institutions.Any(i => i.Id != id && i.Name.ToLower() == name.ToLower()))
-            throw new InvalidOperationException("An institution with this name already exists.");
+            throw new InvalidOperationException("Bu isimde bir kurum zaten var.");
 
         institution.Name = name;
         institution.Type = type;
@@ -42,12 +43,12 @@ public class InstitutionService
 
     public void AddBranch(int institutionId, string name, string? address, string? phoneNumber)
     {
-        name = RequireText(name, "Branch name");
+        name = RequireText(name, "Şube adı");
 
         var institution = _context.Institutions
             .Include(i => i.Branches)
             .FirstOrDefault(i => i.Id == institutionId)
-            ?? throw new KeyNotFoundException("Institution not found.");
+            ?? throw new KeyNotFoundException("Kurum bulunamadı.");
 
         institution.AddBranch(new Branch
         {
@@ -60,16 +61,16 @@ public class InstitutionService
 
     public void UpdateBranch(int branchId, string name, string? address, string? phoneNumber)
     {
-        name = RequireText(name, "Branch name");
+        name = RequireText(name, "Şube adı");
 
         var branch = _context.Branches
             .Include(b => b.Institution).ThenInclude(i => i!.Branches)
             .FirstOrDefault(b => b.Id == branchId)
-            ?? throw new KeyNotFoundException("Branch not found.");
+            ?? throw new KeyNotFoundException("Şube bulunamadı.");
 
         if (branch.Institution!.Branches.Any(b => b.Id != branchId
                 && string.Equals(b.Name, name, StringComparison.OrdinalIgnoreCase)))
-            throw new InvalidOperationException($"A branch named '{name}' already exists.");
+            throw new InvalidOperationException($"'{name}' adında bir şube zaten var.");
 
         branch.Name = name;
         branch.Address = address?.Trim() ?? string.Empty;
@@ -79,7 +80,7 @@ public class InstitutionService
 
     public void AddDepartment(int branchId, string name)
     {
-        name = RequireText(name, "Department name");
+        name = RequireText(name, "Bölüm adı");
 
         var branch = LoadBranch(branchId);
         branch.AddDepartment(new Department { Name = name });
@@ -90,10 +91,10 @@ public class InstitutionService
     {
         var branch = LoadBranch(branchId);
         var department = branch.Departments.FirstOrDefault(d => d.Id == departmentId)
-            ?? throw new KeyNotFoundException("Department not found.");
+            ?? throw new KeyNotFoundException("Bölüm bulunamadı.");
 
         if (_context.Doctors.Any(d => d.DepartmentId == departmentId))
-            throw new InvalidOperationException("This department has doctors assigned and cannot be removed.");
+            throw new InvalidOperationException("Bu bölüme atanmış doktorlar olduğu için silinemez.");
 
         branch.RemoveDepartment(department);
         _context.SaveChanges();
@@ -112,7 +113,7 @@ public class InstitutionService
             }
 
             if (day.OpenTime == null || day.CloseTime == null)
-                throw new ArgumentException($"Please enter opening and closing times for {day.Day}.");
+                throw new ArgumentException($"{day.Day.ToDisplay()} için açılış ve kapanış saatlerini giriniz.");
 
             branch.SetWorkingHours(new WorkingHours(day.Day,
                 TimeOnly.FromTimeSpan(day.OpenTime.Value),
@@ -124,12 +125,12 @@ public class InstitutionService
 
     public void AddService(int institutionId, string name, ServiceCategory category, int durationMinutes, decimal price)
     {
-        name = RequireText(name, "Service name");
+        name = RequireText(name, "Hizmet adı");
 
         var institution = _context.Institutions
             .Include(i => i.Services)
             .FirstOrDefault(i => i.Id == institutionId)
-            ?? throw new KeyNotFoundException("Institution not found.");
+            ?? throw new KeyNotFoundException("Kurum bulunamadı.");
 
         institution.AddService(new MedicalService(name, category, TimeSpan.FromMinutes(durationMinutes), price));
         _context.SaveChanges();
@@ -137,15 +138,15 @@ public class InstitutionService
 
     public void UpdateService(int serviceId, string name, ServiceCategory category, int durationMinutes, decimal price)
     {
-        name = RequireText(name, "Service name");
+        name = RequireText(name, "Hizmet adı");
 
         var service = _context.MedicalServices.Find(serviceId)
-            ?? throw new KeyNotFoundException("Service not found.");
+            ?? throw new KeyNotFoundException("Hizmet bulunamadı.");
 
         if (_context.MedicalServices.Any(s => s.Id != serviceId
                 && s.InstitutionId == service.InstitutionId
                 && s.Name.ToLower() == name.ToLower()))
-            throw new InvalidOperationException($"A service named '{name}' already exists.");
+            throw new InvalidOperationException($"'{name}' adında bir hizmet zaten var.");
 
         service.UpdateDetails(name, category);
         service.UpdatePricing(TimeSpan.FromMinutes(durationMinutes), price);
@@ -158,13 +159,13 @@ public class InstitutionService
             .Include(b => b.Departments)
             .Include(b => b.Schedule)
             .FirstOrDefault(b => b.Id == branchId)
-            ?? throw new KeyNotFoundException("Branch not found.");
+            ?? throw new KeyNotFoundException("Şube bulunamadı.");
     }
 
     private static string RequireText(string? value, string fieldName)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException($"{fieldName} is required.");
+            throw new ArgumentException($"{fieldName} zorunludur.");
         return value.Trim();
     }
 }

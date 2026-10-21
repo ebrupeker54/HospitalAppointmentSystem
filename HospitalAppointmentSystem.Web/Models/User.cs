@@ -20,7 +20,7 @@ public abstract class User
     public void SetPassword(string password)
     {
         if (string.IsNullOrWhiteSpace(password) || password.Length < 6)
-            throw new ArgumentException("Password must be at least 6 characters.");
+            throw new ArgumentException("Şifre en az 6 karakter olmalıdır.");
 
         PasswordHash = Hasher.HashPassword(this, password);
     }

@@ -87,7 +87,7 @@ public class PatientController : Controller
         try
         {
             _appointmentService.Book(patient, doctor, service, startTime);
-            TempData["Success"] = $"Your appointment request for {startTime:dd MMM yyyy HH:mm} has been sent to Dr. {doctor.FullName}.";
+            TempData["Success"] = $"Randevu talebiniz oluşturuldu ({startTime:dd MMMM yyyy HH:mm}, Dr. {doctor.FullName}). Doktor onayı bekleniyor.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex) when (ex is AppointmentConflictException or InvalidOperationException or ArgumentException)
@@ -109,7 +109,7 @@ public class PatientController : Controller
         try
         {
             _appointmentService.CancelByPatient(id, CurrentPatientId);
-            TempData["Success"] = "Your appointment has been cancelled.";
+            TempData["Success"] = "Randevunuz iptal edildi.";
         }
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
         {

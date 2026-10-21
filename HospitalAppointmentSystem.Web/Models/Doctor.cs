@@ -23,7 +23,7 @@ public class Doctor : User
     {
         if (Branch?.Institution != null && service.Institution != null
             && Branch.Institution != service.Institution)
-            throw new InvalidOperationException("A doctor can only offer services of their own institution.");
+            throw new InvalidOperationException("Doktor yalnızca kendi kurumunun hizmetlerini verebilir.");
 
         if (Services.Contains(service))
             return;
@@ -37,7 +37,7 @@ public class Doctor : User
     public void AssignTo(Branch branch, Department? department)
     {
         if (department != null && department.BranchId != branch.Id)
-            throw new InvalidOperationException("The selected department does not belong to the selected branch.");
+            throw new InvalidOperationException("Seçilen bölüm, seçilen şubeye ait değil.");
 
         Branch = branch;
         BranchId = branch.Id;
@@ -59,10 +59,10 @@ public class Doctor : User
     public void AddAvailability(AvailabilitySlot slot)
     {
         if (Branch != null && !Branch.IsOpenBetween(slot.Start, slot.End))
-            throw new InvalidOperationException("The slot must be within the branch's working hours.");
+            throw new InvalidOperationException("Uygunluk aralığı şubenin çalışma saatleri içinde olmalıdır.");
 
         if (Availability.Any(s => s.Overlaps(slot)))
-            throw new InvalidOperationException("This slot overlaps with an existing availability slot.");
+            throw new InvalidOperationException("Bu aralık mevcut bir uygunluk aralığıyla çakışıyor.");
 
         slot.Doctor = this;
         Availability.Add(slot);
@@ -73,6 +73,6 @@ public class Doctor : User
 
     public override string GetRoleDescription()
     {
-        return $"Doctor ({Specialty}) - can manage availability and approve appointments";
+        return $"Doktor ({Specialty}) - uygunluk saatlerini yönetebilir ve randevuları onaylayabilir";
     }
 }

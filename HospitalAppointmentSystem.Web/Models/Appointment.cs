@@ -30,9 +30,9 @@ public class Appointment
     public Appointment(Patient patient, Doctor doctor, MedicalService service, DateTime startTime)
     {
         if (startTime <= DateTime.Now)
-            throw new ArgumentException("Appointment must be in the future.");
+            throw new ArgumentException("Randevu ileri bir tarih için alınmalıdır.");
         if (!doctor.CanPerform(service))
-            throw new InvalidOperationException("This doctor does not offer the selected service.");
+            throw new InvalidOperationException("Seçilen doktor bu hizmeti vermiyor.");
 
         Patient = patient;
         PatientId = patient.Id;
@@ -53,16 +53,16 @@ public class Appointment
 
     public void Approve()
     {
-        EnsureStatus(AppointmentStatus.Pending, "approved");
+        EnsureStatus(AppointmentStatus.Pending, "Yalnızca onay bekleyen randevular onaylanabilir.");
         Status = AppointmentStatus.Approved;
     }
 
     public void Reject(string reason)
     {
         if (string.IsNullOrWhiteSpace(reason))
-            throw new ArgumentException("A rejection reason is required.");
+            throw new ArgumentException("Ret gerekçesi zorunludur.");
 
-        EnsureStatus(AppointmentStatus.Pending, "rejected");
+        EnsureStatus(AppointmentStatus.Pending, "Yalnızca onay bekleyen randevular reddedilebilir.");
         Status = AppointmentStatus.Rejected;
         RejectionReason = reason.Trim();
     }
@@ -70,19 +70,19 @@ public class Appointment
     public void Cancel()
     {
         if (!IsActive)
-            throw new InvalidOperationException("Only pending or approved appointments can be cancelled.");
+            throw new InvalidOperationException("Yalnızca onay bekleyen veya onaylanmış randevular iptal edilebilir.");
         Status = AppointmentStatus.Cancelled;
     }
 
     public void Complete()
     {
-        EnsureStatus(AppointmentStatus.Approved, "completed");
+        EnsureStatus(AppointmentStatus.Approved, "Yalnızca onaylanmış randevular tamamlanabilir.");
         Status = AppointmentStatus.Completed;
     }
 
-    private void EnsureStatus(AppointmentStatus expected, string action)
+    private void EnsureStatus(AppointmentStatus expected, string errorMessage)
     {
         if (Status != expected)
-            throw new InvalidOperationException($"Only {expected} appointments can be {action}. Current status: {Status}.");
+            throw new InvalidOperationException(errorMessage);
     }
 }

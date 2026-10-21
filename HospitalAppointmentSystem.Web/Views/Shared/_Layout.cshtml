@@ -1,8 +1,9 @@
 ﻿@{
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,19 +24,19 @@
                     <span>Medi<span class="text-brand">Point</span></span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Menüyü aç/kapat">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto ms-md-4">
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door me-1"></i> Home
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door me-1"></i> Ana Sayfa
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && ViewContext.RouteData.Values["action"]?.ToString() == "Privacy" ? "active" : "")" asp-controller="Home" asp-action="Privacy">
-                                <i class="bi bi-shield-lock me-1"></i> Privacy
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Privacy" ? "active" : "")" asp-controller="Home" asp-action="Privacy">
+                                <i class="bi bi-shield-lock me-1"></i> Gizlilik
                             </a>
                         </li>
                     </ul>
@@ -52,7 +53,7 @@
                 <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
                     <i class="bi bi-check-circle-fill"></i>
                     <span>@successMessage</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
                 </div>
             }
             @if (TempData["Error"] is string errorMessage)
@@ -60,7 +61,7 @@
                 <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     <span>@errorMessage</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Kapat"></button>
                 </div>
             }
             @RenderBody()
@@ -69,8 +70,8 @@
 
     <footer class="app-footer">
         <div class="container d-flex flex-wrap justify-content-between gap-2">
-            <span>&copy; 2026 MediPoint &middot; Hospital Appointment System</span>
-            <span>Object-Oriented Programming Course Project</span>
+            <span>&copy; 2026 MediPoint &middot; Hastane Randevu Sistemi</span>
+            <span>Nesneye Dayalı Programlama Dersi Projesi</span>
         </div>
     </footer>
 

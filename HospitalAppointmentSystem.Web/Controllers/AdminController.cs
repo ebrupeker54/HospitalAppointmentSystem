@@ -62,17 +62,17 @@ public class AdminController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult CreateInstitution(string name, InstitutionType type) =>
         Handle(() => _institutionService.CreateInstitution(name, type),
-            "Institution created.", RedirectToAction(nameof(Institutions)));
+            "Kurum oluşturuldu.", RedirectToAction(nameof(Institutions)));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult UpdateInstitution(int id, string name, InstitutionType type) =>
         Handle(() => _institutionService.UpdateInstitution(id, name, type),
-            "Institution updated.", RedirectToAction(nameof(Institutions)));
+            "Kurum güncellendi.", RedirectToAction(nameof(Institutions)));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult CreateBranch(int institutionId, string name, string? address, string? phoneNumber) =>
         Handle(() => _institutionService.AddBranch(institutionId, name, address, phoneNumber),
-            "Branch added.", RedirectToAction(nameof(Institutions)));
+            "Şube eklendi.", RedirectToAction(nameof(Institutions)));
 
     // ---------- Branch details ----------
 
@@ -113,22 +113,22 @@ public class AdminController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult UpdateBranch(int id, string name, string? address, string? phoneNumber) =>
         Handle(() => _institutionService.UpdateBranch(id, name, address, phoneNumber),
-            "Branch updated.", RedirectToAction(nameof(Branch), new { id }));
+            "Şube güncellendi.", RedirectToAction(nameof(Branch), new { id }));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult AddDepartment(int branchId, string name) =>
         Handle(() => _institutionService.AddDepartment(branchId, name),
-            "Department added.", RedirectToAction(nameof(Branch), new { id = branchId }));
+            "Bölüm eklendi.", RedirectToAction(nameof(Branch), new { id = branchId }));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult RemoveDepartment(int branchId, int departmentId) =>
         Handle(() => _institutionService.RemoveDepartment(branchId, departmentId),
-            "Department removed.", RedirectToAction(nameof(Branch), new { id = branchId }));
+            "Bölüm silindi.", RedirectToAction(nameof(Branch), new { id = branchId }));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult UpdateSchedule(int branchId, List<DayScheduleInput> schedule) =>
         Handle(() => _institutionService.UpdateSchedule(branchId, schedule),
-            "Working hours saved.", RedirectToAction(nameof(Branch), new { id = branchId }));
+            "Çalışma saatleri kaydedildi.", RedirectToAction(nameof(Branch), new { id = branchId }));
 
     // ---------- Services ----------
 
@@ -145,12 +145,12 @@ public class AdminController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult CreateService(int institutionId, string name, ServiceCategory category, int durationMinutes, decimal price) =>
         Handle(() => _institutionService.AddService(institutionId, name, category, durationMinutes, price),
-            "Service added.", RedirectToAction(nameof(Services)));
+            "Hizmet eklendi.", RedirectToAction(nameof(Services)));
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult UpdateService(int id, string name, ServiceCategory category, int durationMinutes, decimal price) =>
         Handle(() => _institutionService.UpdateService(id, name, category, durationMinutes, price),
-            "Service updated.", RedirectToAction(nameof(Services)));
+            "Hizmet güncellendi.", RedirectToAction(nameof(Services)));
 
     // ---------- Doctors ----------
 
@@ -178,9 +178,9 @@ public class AdminController : Controller
     public IActionResult CreateDoctor(DoctorFormViewModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Password))
-            ModelState.AddModelError(nameof(model.Password), "Password is required.");
+            ModelState.AddModelError(nameof(model.Password), "Şifre zorunludur.");
 
-        return SaveDoctor(model, () => _staffService.CreateDoctor(model), "Doctor created.");
+        return SaveDoctor(model, () => _staffService.CreateDoctor(model), "Doktor kaydı oluşturuldu..");
     }
 
     [HttpGet]
@@ -208,7 +208,7 @@ public class AdminController : Controller
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult EditDoctor(DoctorFormViewModel model) =>
-        SaveDoctor(model, () => _staffService.UpdateDoctor(model), "Doctor updated.");
+        SaveDoctor(model, () => _staffService.UpdateDoctor(model), "Doktor bilgileri güncellendi.");
 
     private IActionResult SaveDoctor(DoctorFormViewModel model, Action save, string successMessage)
     {
