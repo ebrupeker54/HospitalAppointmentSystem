@@ -206,7 +206,7 @@ HospitalAppointmentSystem.Web/
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@hospital.com | Admin123! |
-| Doctor | ayse.yilmaz@hospital.com | Doctor123! |
+| Doctor | ebru.yazici@hospital.com | Doctor123! |
 | Doctor | mehmet.kaya@hospital.com | Doctor123! |
 | Doctor | zeynep.demir@hospital.com | Doctor123! |
 | Patient | patient@test.com | Patient123! |
