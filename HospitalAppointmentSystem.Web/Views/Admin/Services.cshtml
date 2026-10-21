@@ -1,0 +1,123 @@
+﻿@model List<HospitalAppointmentSystem.Web.Models.Institution>
+@using HospitalAppointmentSystem.Web.Models
+@{
+    ViewData["Title"] = "Services";
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>Medical Services</h1>
+        <p>Define the services each institution offers, with their duration and price.</p>
+    </div>
+</div>
+
+@foreach (var institution in Model)
+{
+    <div class="panel-card mb-4">
+        <div class="panel-card-header">
+            <i class="bi bi-hospital"></i>
+            <span>@institution.Name</span>
+            <button class="btn btn-sm btn-outline-brand ms-auto" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#new-service-@institution.Id">
+                <i class="bi bi-plus-lg me-1"></i>Add Service
+            </button>
+        </div>
+
+        <div class="collapse" id="new-service-@institution.Id">
+            <form asp-action="CreateService" method="post" class="row g-3 p-3 border-bottom bg-light">
+                <input type="hidden" name="institutionId" value="@institution.Id" />
+                <div class="col-md-4">
+                    <label class="form-label small">Name</label>
+                    <input name="name" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">Category</label>
+                    <select name="category" class="form-select">
+                        @foreach (var c in Enum.GetValues<ServiceCategory>())
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Duration (min)</label>
+                    <input name="durationMinutes" type="number" min="5" step="5" value="20" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">Price (TL)</label>
+                    <input name="price" type="number" min="0" step="0.01" value="0" class="form-control" required />
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-brand w-100">Add</button>
+                </div>
+            </form>
+        </div>
+
+        @if (!institution.Services.Any())
+        {
+            <div class="empty-state"><p class="mb-0">No services defined yet.</p></div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-modern align-middle">
+                    <thead>
+                        <tr><th>Service</th><th>Category</th><th>Duration</th><th>Price</th><th>Doctors</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in institution.Services.OrderBy(s => s.Name))
+                        {
+                            <tr>
+                                <td class="cell-main">@s.Name</td>
+                                <td><span class="badge service-badge">@s.Category</span></td>
+                                <td>@s.Duration.TotalMinutes min</td>
+                                <td>@s.Price.ToString("N2") TL</td>
+                                <td>@s.Doctors.Count</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-light" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#edit-service-@s.Id">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="collapse" id="edit-service-@s.Id">
+                                <td colspan="6" class="bg-light">
+                                    <form asp-action="UpdateService" asp-route-id="@s.Id" method="post" class="row g-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label small">Name</label>
+                                            <input name="name" value="@s.Name" class="form-control" required />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small">Category</label>
+                                            <select name="category" class="form-select">
+                                                @foreach (var c in Enum.GetValues<ServiceCategory>())
+                                                {
+                                                    <option value="@c" selected="@(c == s.Category)">@c</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label small">Duration (min)</label>
+                                            <input name="durationMinutes" type="number" min="5" step="5"
+                                                   value="@s.Duration.TotalMinutes" class="form-control" required />
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label small">Price (TL)</label>
+                                            <input name="price" type="number" min="0" step="0.01"
+                                                   value="@s.Price.ToString("0.00")" class="form-control" required />
+                                        </div>
+                                        <div class="col-md-1 d-flex align-items-end">
+                                            <button type="submit" class="btn btn-brand w-100">Save</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+}

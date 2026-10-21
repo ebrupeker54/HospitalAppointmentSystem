@@ -19,11 +19,13 @@ public class AdminController : Controller
 
     private readonly AppDbContext _context;
     private readonly InstitutionService _institutionService;
+    private readonly StaffService _staffService;
 
-    public AdminController(AppDbContext context, InstitutionService institutionService)
+    public AdminController(AppDbContext context, InstitutionService institutionService, StaffService staffService)
     {
         _context = context;
         _institutionService = institutionService;
+        _staffService = staffService;
     }
 
     public IActionResult Index()
@@ -127,6 +129,119 @@ public class AdminController : Controller
     public IActionResult UpdateSchedule(int branchId, List<DayScheduleInput> schedule) =>
         Handle(() => _institutionService.UpdateSchedule(branchId, schedule),
             "Working hours saved.", RedirectToAction(nameof(Branch), new { id = branchId }));
+
+    // ---------- Services ----------
+
+    public IActionResult Services()
+    {
+        var institutions = _context.Institutions
+            .Include(i => i.Services).ThenInclude(s => s.Doctors)
+            .OrderBy(i => i.Name)
+            .ToList();
+
+        return View(institutions);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult CreateService(int institutionId, string name, ServiceCategory category, int durationMinutes, decimal price) =>
+        Handle(() => _institutionService.AddService(institutionId, name, category, durationMinutes, price),
+            "Service added.", RedirectToAction(nameof(Services)));
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult UpdateService(int id, string name, ServiceCategory category, int durationMinutes, decimal price) =>
+        Handle(() => _institutionService.UpdateService(id, name, category, durationMinutes, price),
+            "Service updated.", RedirectToAction(nameof(Services)));
+
+    // ---------- Doctors ----------
+
+    public IActionResult Doctors()
+    {
+        var doctors = _context.Doctors
+            .Include(d => d.Branch).ThenInclude(b => b!.Institution)
+            .Include(d => d.Department)
+            .Include(d => d.Services)
+            .OrderBy(d => d.LastName)
+            .ToList();
+
+        return View(doctors);
+    }
+
+    [HttpGet]
+    public IActionResult CreateDoctor()
+    {
+        var model = new DoctorFormViewModel();
+        FillDoctorFormLists(model);
+        return View("DoctorForm", model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult CreateDoctor(DoctorFormViewModel model)
+    {
+        if (string.IsNullOrWhiteSpace(model.Password))
+            ModelState.AddModelError(nameof(model.Password), "Password is required.");
+
+        return SaveDoctor(model, () => _staffService.CreateDoctor(model), "Doctor created.");
+    }
+
+    [HttpGet]
+    public IActionResult EditDoctor(int id)
+    {
+        var doctor = _context.Doctors.Include(d => d.Services).FirstOrDefault(d => d.Id == id);
+        if (doctor == null)
+            return NotFound();
+
+        var model = new DoctorFormViewModel
+        {
+            Id = doctor.Id,
+            FirstName = doctor.FirstName,
+            LastName = doctor.LastName,
+            Email = doctor.Email,
+            PhoneNumber = doctor.PhoneNumber,
+            Specialty = doctor.Specialty,
+            BranchId = doctor.BranchId,
+            DepartmentId = doctor.DepartmentId,
+            ServiceIds = doctor.Services.Select(s => s.Id).ToList()
+        };
+        FillDoctorFormLists(model);
+        return View("DoctorForm", model);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult EditDoctor(DoctorFormViewModel model) =>
+        SaveDoctor(model, () => _staffService.UpdateDoctor(model), "Doctor updated.");
+
+    private IActionResult SaveDoctor(DoctorFormViewModel model, Action save, string successMessage)
+    {
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                save();
+                TempData["Success"] = successMessage;
+                return RedirectToAction(nameof(Doctors));
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or KeyNotFoundException)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+            }
+        }
+
+        FillDoctorFormLists(model);
+        return View("DoctorForm", model);
+    }
+
+    private void FillDoctorFormLists(DoctorFormViewModel model)
+    {
+        model.Branches = _context.Branches
+            .Include(b => b.Institution)
+            .Include(b => b.Departments)
+            .OrderBy(b => b.Institution!.Name).ThenBy(b => b.Name)
+            .ToList();
+        model.Services = _context.MedicalServices
+            .Include(s => s.Institution)
+            .OrderBy(s => s.Name)
+            .ToList();
+    }
 
     private IActionResult Handle(Action action, string successMessage, IActionResult redirect)
     {

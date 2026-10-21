@@ -13,4 +13,14 @@
             <i class="bi bi-buildings me-1"></i> Institutions &amp; Branches
         </a>
     </li>
+        <li class="nav-item">
+        <a class="nav-link @(action == "Services" ? "active" : "")" asp-controller="Admin" asp-action="Services">
+            <i class="bi bi-clipboard2-pulse me-1"></i> Services
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(action is "Doctors" or "CreateDoctor" or "EditDoctor" ? "active" : "")" asp-controller="Admin" asp-action="Doctors">
+            <i class="bi bi-person-badge me-1"></i> Doctors
+        </a>
+    </li>
 </ul>

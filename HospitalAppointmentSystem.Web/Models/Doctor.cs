@@ -34,6 +34,28 @@ public class Doctor : User
 
     public bool CanPerform(MedicalService service) => Services.Contains(service);
 
+    public void AssignTo(Branch branch, Department? department)
+    {
+        if (department != null && department.BranchId != branch.Id)
+            throw new InvalidOperationException("The selected department does not belong to the selected branch.");
+
+        Branch = branch;
+        BranchId = branch.Id;
+        Department = department;
+        DepartmentId = department?.Id;
+    }
+
+    public void SetServices(IEnumerable<MedicalService> services)
+    {
+        foreach (var existing in Services.ToList())
+        {
+            Services.Remove(existing);
+            existing.Doctors.Remove(this);
+        }
+
+        foreach (var service in services)
+            AddService(service);
+    }
     public void AddAvailability(AvailabilitySlot slot)
     {
         if (Branch != null && !Branch.IsOpenBetween(slot.Start, slot.End))

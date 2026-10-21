@@ -1,0 +1,67 @@
+﻿@model List<HospitalAppointmentSystem.Web.Models.Doctor>
+@{
+    ViewData["Title"] = "Doctors";
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>Doctors</h1>
+        <p>Register doctors and assign them to branches, departments and services.</p>
+    </div>
+    <a asp-action="CreateDoctor" class="btn btn-brand"><i class="bi bi-person-plus me-1"></i> New Doctor</a>
+</div>
+
+<div class="panel-card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-person-badge"></i>
+            <p class="mb-0">No doctors registered yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr><th>Doctor</th><th>Specialty</th><th>Branch</th><th>Department</th><th>Services</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="avatar">@(d.FirstName.Length > 0 ? d.FirstName[0] : ' ')@(d.LastName.Length > 0 ? d.LastName[0] : ' ')</span>
+                                    <div>
+                                        <div class="cell-main">Dr. @d.FullName</div>
+                                        <small class="text-muted">@d.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@d.Specialty</td>
+                            <td>
+                                <div>@d.Branch?.Name</div>
+                                <small class="text-muted">@d.Branch?.Institution?.Name</small>
+                            </td>
+                            <td>@(d.Department?.Name ?? "-")</td>
+                            <td>
+                                @foreach (var s in d.Services)
+                                {
+                                    <span class="badge service-badge">@s.Name</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="EditDoctor" asp-route-id="@d.Id" class="btn btn-sm btn-light">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

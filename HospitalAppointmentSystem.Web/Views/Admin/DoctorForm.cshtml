@@ -1,0 +1,150 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.DoctorFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit Doctor" : "New Doctor";
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>@(Model.IsEdit ? "Edit Doctor" : "New Doctor")</h1>
+        <p>@(Model.IsEdit ? "Update the doctor's details and assignments." : "Create a doctor account and assign it to a branch.")</p>
+    </div>
+    <a asp-action="Doctors" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</div>
+
+<form asp-action="@(Model.IsEdit ? "EditDoctor" : "CreateDoctor")" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="panel-card">
+                <div class="panel-card-header"><i class="bi bi-person"></i> Personal Information</div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FirstName" class="form-label"></label>
+                            <input asp-for="FirstName" class="form-control" />
+                            <span asp-validation-for="FirstName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="LastName" class="form-label"></label>
+                            <input asp-for="LastName" class="form-control" />
+                            <span asp-validation-for="LastName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label"></label>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Specialty" class="form-label"></label>
+                            <input asp-for="Specialty" class="form-control" placeholder="e.g. Cardiology" />
+                            <span asp-validation-for="Specialty" class="text-danger small"></span>
+                        </div>
+                        @if (!Model.IsEdit)
+                        {
+                            <div class="col-12">
+                                <label asp-for="Password" class="form-label">Initial Password</label>
+                                <input asp-for="Password" class="form-control" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel-card">
+                <div class="panel-card-header"><i class="bi bi-diagram-3"></i> Assignment</div>
+                <div class="p-4">
+                    <div class="mb-3">
+                        <label asp-for="BranchId" class="form-label"></label>
+                        <select asp-for="BranchId" class="form-select">
+                            <option value="">Select a branch</option>
+                            @foreach (var b in Model.Branches)
+                            {
+                                <option value="@b.Id" data-institution="@b.InstitutionId">@b.Institution?.Name &middot; @b.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="BranchId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="DepartmentId" class="form-label"></label>
+                        <select asp-for="DepartmentId" class="form-select">
+                            <option value="">No department</option>
+                            @foreach (var b in Model.Branches)
+                            {
+                                foreach (var d in b.Departments.OrderBy(d => d.Name))
+                                {
+                                    <option value="@d.Id" data-branch="@b.Id">@d.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <label class="form-label">Services</label>
+                    <p class="small text-muted mb-2" id="serviceHint">Select a branch to see the services of its institution.</p>
+                    @foreach (var s in Model.Services)
+                    {
+                        <div class="form-check service-option" data-institution="@s.InstitutionId">
+                            <input class="form-check-input" type="checkbox" name="ServiceIds" value="@s.Id"
+                                   id="svc-@s.Id" checked="@Model.ServiceIds.Contains(s.Id)" />
+                            <label class="form-check-label" for="svc-@s.Id">
+                                @s.Name <small class="text-muted">(@s.Duration.TotalMinutes min, @s.Price.ToString("N2") TL)</small>
+                            </label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-brand px-4">
+            <i class="bi bi-save me-1"></i>@(Model.IsEdit ? "Save Changes" : "Create Doctor")
+        </button>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const branch = document.getElementById('BranchId');
+            const department = document.getElementById('DepartmentId');
+            const hint = document.getElementById('serviceHint');
+
+            function refresh() {
+                const selected = branch.options[branch.selectedIndex];
+                const branchId = branch.value;
+                const institutionId = selected ? selected.dataset.institution : undefined;
+
+                department.querySelectorAll('option[data-branch]').forEach(function (option) {
+                    const visible = option.dataset.branch === branchId;
+                    option.hidden = !visible;
+                    if (!visible && option.selected) department.value = '';
+                });
+
+                document.querySelectorAll('.service-option').forEach(function (item) {
+                    const visible = item.dataset.institution === institutionId;
+                    item.classList.toggle('d-none', !visible);
+                    if (!visible) item.querySelector('input').checked = false;
+                });
+
+                hint.classList.toggle('d-none', !!branchId);
+            }
+
+            branch.addEventListener('change', refresh);
+            refresh();
+        })();
+    </script>
+}

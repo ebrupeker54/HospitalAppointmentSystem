@@ -122,6 +122,36 @@ public class InstitutionService
         _context.SaveChanges();
     }
 
+    public void AddService(int institutionId, string name, ServiceCategory category, int durationMinutes, decimal price)
+    {
+        name = RequireText(name, "Service name");
+
+        var institution = _context.Institutions
+            .Include(i => i.Services)
+            .FirstOrDefault(i => i.Id == institutionId)
+            ?? throw new KeyNotFoundException("Institution not found.");
+
+        institution.AddService(new MedicalService(name, category, TimeSpan.FromMinutes(durationMinutes), price));
+        _context.SaveChanges();
+    }
+
+    public void UpdateService(int serviceId, string name, ServiceCategory category, int durationMinutes, decimal price)
+    {
+        name = RequireText(name, "Service name");
+
+        var service = _context.MedicalServices.Find(serviceId)
+            ?? throw new KeyNotFoundException("Service not found.");
+
+        if (_context.MedicalServices.Any(s => s.Id != serviceId
+                && s.InstitutionId == service.InstitutionId
+                && s.Name.ToLower() == name.ToLower()))
+            throw new InvalidOperationException($"A service named '{name}' already exists.");
+
+        service.UpdateDetails(name, category);
+        service.UpdatePricing(TimeSpan.FromMinutes(durationMinutes), price);
+        _context.SaveChanges();
+    }
+
     private Branch LoadBranch(int branchId)
     {
         return _context.Branches

@@ -3,6 +3,9 @@ using HospitalAppointmentSystem.Web.Repositories;
 using HospitalAppointmentSystem.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -17,6 +20,7 @@ builder.Services.AddScoped<AppointmentService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AvailabilityService>();
 builder.Services.AddScoped<InstitutionService>();
+builder.Services.AddScoped<StaffService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -44,6 +48,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+var culture = new CultureInfo("en-US");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(culture),
+    SupportedCultures = new[] { culture },
+    SupportedUICultures = new[] { culture }
+});
 
 app.UseRouting();
 

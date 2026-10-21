@@ -26,6 +26,15 @@ public class MedicalService
         UpdatePricing(duration, price);
     }
 
+    public void UpdateDetails(string name, ServiceCategory category)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Service name cannot be empty.");
+
+        Name = name.Trim();
+        Category = category;
+    }
+
     public void UpdatePricing(TimeSpan duration, decimal price)
     {
         if (duration <= TimeSpan.Zero)
