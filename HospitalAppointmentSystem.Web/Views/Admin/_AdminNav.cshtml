@@ -1,0 +1,16 @@
+﻿@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+}
+
+<ul class="nav admin-nav mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(action == "Index" ? "active" : "")" asp-controller="Admin" asp-action="Index">
+            <i class="bi bi-speedometer2 me-1"></i> Dashboard
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(action is "Institutions" or "Branch" ? "active" : "")" asp-controller="Admin" asp-action="Institutions">
+            <i class="bi bi-buildings me-1"></i> Institutions &amp; Branches
+        </a>
+    </li>
+</ul>

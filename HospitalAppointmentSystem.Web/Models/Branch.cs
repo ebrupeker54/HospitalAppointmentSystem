@@ -28,6 +28,16 @@ public class Branch
         Schedule.Add(hours);
     }
 
+    public void CloseOn(DayOfWeek day)
+    {
+        Schedule.RemoveAll(w => w.Day == day);
+    }
+
+    public void RemoveDepartment(Department department)
+    {
+        Departments.Remove(department);
+    }
+
     public bool IsOpenAt(DateTime dateTime)
     {
         var hours = Schedule.FirstOrDefault(w => w.Day == dateTime.DayOfWeek);
