@@ -5,5 +5,6 @@ public enum ServiceCategory
     GeneralExamination,
     Radiology,
     Laboratory,
+    Nursing,
     Other
 }

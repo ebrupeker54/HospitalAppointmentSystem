@@ -22,6 +22,8 @@ public static class DisplayExtensions
         UserRole.Patient => "Hasta",
         UserRole.Doctor => "Doktor",
         UserRole.Admin => "Yönetici",
+        UserRole.HealthStaff => "Sağlık Personeli",
+        UserRole.Secretary => "Sekreter",
         _ => role.ToString()
     };
 
@@ -30,6 +32,7 @@ public static class DisplayExtensions
         ServiceCategory.GeneralExamination => "Genel Muayene",
         ServiceCategory.Radiology => "Radyoloji",
         ServiceCategory.Laboratory => "Laboratuvar",
+        ServiceCategory.Nursing => "Hemşirelik",
         ServiceCategory.Other => "Diğer",
         _ => category.ToString()
     };

@@ -26,7 +26,7 @@ public class PatientController : Controller
     public IActionResult Index()
     {
         var appointments = _context.Appointments
-            .Include(a => a.Doctor).ThenInclude(d => d!.Branch)
+            .Include(a => a.Professional).ThenInclude(p => p!.Branch)
             .Include(a => a.MedicalService)
             .Where(a => a.PatientId == CurrentPatientId)
             .OrderByDescending(a => a.StartTime)
@@ -36,7 +36,7 @@ public class PatientController : Controller
     }
 
     [HttpGet]
-    public IActionResult Book(int? branchId, int? serviceId, int? doctorId, DateTime? date)
+    public IActionResult Book(int? branchId, int? serviceId, int? professionalId, DateTime? date)
     {
         var model = new BookAppointmentViewModel
         {
@@ -47,7 +47,7 @@ public class PatientController : Controller
         {
             model.BranchId = branchId;
             model.Services = _context.MedicalServices
-                .Where(s => s.Doctors.Any(d => d.BranchId == branchId))
+                .Where(s => s.Professionals.Any(p => p.BranchId == branchId))
                 .OrderBy(s => s.Name)
                 .ToList();
         }
@@ -56,38 +56,38 @@ public class PatientController : Controller
         {
             model.ServiceId = serviceId;
             model.SelectedService = model.Services.First(s => s.Id == serviceId);
-            model.Doctors = _context.Doctors
-                .Where(d => d.BranchId == branchId && d.Services.Any(s => s.Id == serviceId))
-                .OrderBy(d => d.LastName)
+            model.Professionals = _context.HealthcareProfessionals
+                .Where(p => p.BranchId == branchId && p.Services.Any(s => s.Id == serviceId))
+                .OrderBy(p => p.LastName)
                 .ToList();
         }
 
-        if (model.ServiceId != null && doctorId != null && model.Doctors.Any(d => d.Id == doctorId))
+        if (model.ServiceId != null && professionalId != null && model.Professionals.Any(p => p.Id == professionalId))
         {
-            model.DoctorId = doctorId;
+            model.ProfessionalId = professionalId;
             model.Date = date?.Date < DateTime.Today ? DateTime.Today : date?.Date ?? DateTime.Today.AddDays(1);
-            model.SelectedDoctor = LoadDoctor(doctorId.Value);
+            model.SelectedProfessional = LoadProfessional(professionalId.Value);
             model.AvailableTimes = _appointmentService.GetAvailableStartTimes(
-                model.SelectedDoctor!, model.SelectedService!, model.Date.Value);
+                model.SelectedProfessional!, model.SelectedService!, model.Date.Value);
         }
 
         return View(model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult Book(int doctorId, int serviceId, DateTime startTime)
+    public IActionResult Book(int professionalId, int serviceId, DateTime startTime)
     {
         var patient = _context.Patients.Find(CurrentPatientId);
-        var doctor = LoadDoctor(doctorId);
+        var professional = LoadProfessional(professionalId);
         var service = _context.MedicalServices.Find(serviceId);
 
-        if (patient == null || doctor == null || service == null)
+        if (patient == null || professional == null || service == null)
             return NotFound();
 
         try
         {
-            _appointmentService.Book(patient, doctor, service, startTime);
-            TempData["Success"] = $"Randevu talebiniz oluşturuldu ({startTime:dd MMMM yyyy HH:mm}, Dr. {doctor.FullName}). Doktor onayı bekleniyor.";
+            _appointmentService.Book(patient, professional, service, startTime);
+            TempData["Success"] = $"Randevu talebiniz oluşturuldu ({startTime:dd MMMM yyyy HH:mm}, {professional.DisplayName}). Onay bekleniyor.";
             return RedirectToAction(nameof(Index));
         }
         catch (Exception ex) when (ex is AppointmentConflictException or InvalidOperationException or ArgumentException)
@@ -95,9 +95,9 @@ public class PatientController : Controller
             TempData["Error"] = ex.Message;
             return RedirectToAction(nameof(Book), new
             {
-                branchId = doctor.BranchId,
+                branchId = professional.BranchId,
                 serviceId,
-                doctorId,
+                professionalId,
                 date = startTime.ToString("yyyy-MM-dd")
             });
         }
@@ -119,12 +119,12 @@ public class PatientController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private Doctor? LoadDoctor(int id)
+    private HealthcareProfessional? LoadProfessional(int id)
     {
-        return _context.Doctors
-            .Include(d => d.Branch).ThenInclude(b => b!.Schedule)
-            .Include(d => d.Availability)
-            .Include(d => d.Services)
-            .FirstOrDefault(d => d.Id == id);
+        return _context.HealthcareProfessionals
+            .Include(p => p.Branch).ThenInclude(b => b!.Schedule)
+            .Include(p => p.Availability)
+            .Include(p => p.Services)
+            .FirstOrDefault(p => p.Id == id);
     }
 }

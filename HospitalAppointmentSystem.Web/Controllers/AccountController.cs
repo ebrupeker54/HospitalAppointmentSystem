@@ -88,6 +88,7 @@ public class AccountController : Controller
             new(ClaimTypes.Name, user.FullName),
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.Role, user.Role.ToString()),
+            new("Dashboard", user.DashboardController),
             new("RoleDescription", user.GetRoleDescription())
         };
 

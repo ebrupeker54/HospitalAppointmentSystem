@@ -8,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HospitalAppointmentSystem.Web.Controllers;
 
-[Authorize(Roles = "Doctor")]
-public class DoctorController : Controller
+[Authorize(Roles = "Doctor,HealthStaff")]
+public class ProfessionalController : Controller
 {
     private readonly AppDbContext _context;
     private readonly AppointmentService _appointmentService;
     private readonly AvailabilityService _availabilityService;
 
-    public DoctorController(AppDbContext context, AppointmentService appointmentService,
+    public ProfessionalController(AppDbContext context, AppointmentService appointmentService,
         AvailabilityService availabilityService)
     {
         _context = context;
@@ -23,20 +23,20 @@ public class DoctorController : Controller
         _availabilityService = availabilityService;
     }
 
-    private int CurrentDoctorId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private int CurrentProfessionalId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     public IActionResult Index()
     {
-        var model = new DoctorDashboardViewModel
+        var model = new ProfessionalDashboardViewModel
         {
             Appointments = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.MedicalService)
-                .Where(a => a.DoctorId == CurrentDoctorId)
+                .Where(a => a.ProfessionalId == CurrentProfessionalId)
                 .OrderBy(a => a.StartTime)
                 .ToList(),
             UpcomingSlots = _context.AvailabilitySlots
-                .Where(s => s.DoctorId == CurrentDoctorId && s.End > DateTime.Now)
+                .Where(s => s.ProfessionalId == CurrentProfessionalId && s.End > DateTime.Now)
                 .OrderBy(s => s.Start)
                 .Take(30)
                 .ToList()
@@ -47,24 +47,24 @@ public class DoctorController : Controller
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Approve(int id) =>
-        Handle(() => _appointmentService.ApproveByDoctor(id, CurrentDoctorId), "Randevu onaylandı.");
+        Handle(() => _appointmentService.ApproveByProfessional(id, CurrentProfessionalId), "Randevu onaylandı.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Reject(int id, string? reason) =>
-        Handle(() => _appointmentService.RejectByDoctor(id, CurrentDoctorId, reason ?? string.Empty), "Randevu reddedildi.");
+        Handle(() => _appointmentService.RejectByProfessional(id, CurrentProfessionalId, reason ?? string.Empty), "Randevu reddedildi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Complete(int id) =>
-        Handle(() => _appointmentService.CompleteByDoctor(id, CurrentDoctorId), "Randevu tamamlandı olarak işaretlendi.");
+        Handle(() => _appointmentService.CompleteByProfessional(id, CurrentProfessionalId), "Randevu tamamlandı olarak işaretlendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult AddAvailability(DateTime date, TimeSpan startTime, TimeSpan endTime) =>
-        Handle(() => _availabilityService.AddSlot(CurrentDoctorId, date.Date + startTime, date.Date + endTime),
+        Handle(() => _availabilityService.AddSlot(CurrentProfessionalId, date.Date + startTime, date.Date + endTime),
             "Uygunluk aralığı eklendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult RemoveAvailability(int id) =>
-        Handle(() => _availabilityService.RemoveSlot(id, CurrentDoctorId), "Uygunluk aralığı silindi.");
+        Handle(() => _availabilityService.RemoveSlot(id, CurrentProfessionalId), "Uygunluk aralığı silindi.");
 
     private IActionResult Handle(Action action, string successMessage)
     {

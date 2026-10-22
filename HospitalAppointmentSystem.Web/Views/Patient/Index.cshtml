@@ -64,8 +64,8 @@
                                 <small class="text-muted">@a.StartTime.ToString("HH:mm") - @a.EndTime.ToString("HH:mm")</small>
                             </td>
                             <td>
-                                <div class="cell-main">Dr. @a.Doctor?.FullName</div>
-                                <small class="text-muted">@a.Doctor?.Branch?.Name</small>
+                                <div class="cell-main">@a.Professional?.DisplayName</div>
+                                <small class="text-muted">@a.Professional?.Branch?.Name</small>
                             </td>
                             <td>
                                 <div>@a.MedicalService?.Name</div>

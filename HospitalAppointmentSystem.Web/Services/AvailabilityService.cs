@@ -13,33 +13,33 @@ public class AvailabilityService
         _context = context;
     }
 
-    public void AddSlot(int doctorId, DateTime start, DateTime end)
+    public void AddSlot(int professionalId, DateTime start, DateTime end)
     {
         if (start <= DateTime.Now)
-            throw new ArgumentException("Availability must be in the future.");
+            throw new ArgumentException("Uygunluk aralığı ileri bir tarih için olmalıdır.");
 
-        var doctor = _context.Doctors
-            .Include(d => d.Branch).ThenInclude(b => b!.Schedule)
-            .Include(d => d.Availability)
-            .FirstOrDefault(d => d.Id == doctorId)
-            ?? throw new KeyNotFoundException("Doctor not found.");
+        var professional = _context.HealthcareProfessionals
+            .Include(p => p.Branch).ThenInclude(b => b!.Schedule)
+            .Include(p => p.Availability)
+            .FirstOrDefault(p => p.Id == professionalId)
+            ?? throw new KeyNotFoundException("Sağlık personeli bulunamadı.");
 
-        doctor.AddAvailability(new AvailabilitySlot(start, end));
+        professional.AddAvailability(new AvailabilitySlot(start, end));
         _context.SaveChanges();
     }
 
-    public void RemoveSlot(int slotId, int doctorId)
+    public void RemoveSlot(int slotId, int professionalId)
     {
-        var slot = _context.AvailabilitySlots.FirstOrDefault(s => s.Id == slotId && s.DoctorId == doctorId)
-            ?? throw new KeyNotFoundException("Slot not found.");
+        var slot = _context.AvailabilitySlots.FirstOrDefault(s => s.Id == slotId && s.ProfessionalId == professionalId)
+            ?? throw new KeyNotFoundException("Uygunluk aralığı bulunamadı.");
 
         var hasActiveAppointments = _context.Appointments.Any(a =>
-            a.DoctorId == doctorId
+            a.ProfessionalId == professionalId
             && (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Approved)
             && a.StartTime < slot.End && slot.Start < a.EndTime);
 
         if (hasActiveAppointments)
-            throw new InvalidOperationException("This slot has active appointments and cannot be removed.");
+            throw new InvalidOperationException("Bu aralıkta aktif randevular olduğu için silinemez.");
 
         _context.AvailabilitySlots.Remove(slot);
         _context.SaveChanges();

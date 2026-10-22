@@ -135,7 +135,7 @@ public class AdminController : Controller
     public IActionResult Services()
     {
         var institutions = _context.Institutions
-            .Include(i => i.Services).ThenInclude(s => s.Doctors)
+                        .Include(i => i.Services).ThenInclude(s => s.Professionals)
             .OrderBy(i => i.Name)
             .ToList();
 

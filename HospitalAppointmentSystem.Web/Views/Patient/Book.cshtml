@@ -1,4 +1,5 @@
 ﻿@model HospitalAppointmentSystem.Web.ViewModels.BookAppointmentViewModel
+@using HospitalAppointmentSystem.Web.Models
 @{
     ViewData["Title"] = "Randevu Al";
 }
@@ -6,7 +7,7 @@
 <div class="page-header">
     <div>
         <h1>Randevu Al</h1>
-        <p>Şube, hizmet ve doktor seçin, ardından size uygun bir saat belirleyin.</p>
+        <p>Şube, hizmet ve sağlık personeli seçin, ardından size uygun bir saat belirleyin.</p>
     </div>
     <a asp-action="Index" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Geri</a>
 </div>
@@ -38,12 +39,12 @@
             </div>
 
             <div class="col-md-6 col-lg-3">
-                <label class="form-label">3. Doktor</label>
-                <select name="doctorId" class="form-select" onchange="this.form.submit()" disabled="@(Model.ServiceId == null)">
-                    <option value="">Doktor seçin</option>
-                    @foreach (var d in Model.Doctors)
+                <label class="form-label">3. Sağlık Personeli</label>
+                <select name="professionalId" class="form-select" onchange="this.form.submit()" disabled="@(Model.ServiceId == null)">
+                    <option value="">Personel seçin</option>
+                    @foreach (var p in Model.Professionals)
                     {
-                        <option value="@d.Id" selected="@(d.Id == Model.DoctorId)">Dr. @d.FullName</option>
+                        <option value="@p.Id" selected="@(p.Id == Model.ProfessionalId)">@p.DisplayName</option>
                     }
                 </select>
             </div>
@@ -54,13 +55,13 @@
                        value="@Model.Date?.ToString("yyyy-MM-dd")"
                        min="@DateTime.Today.ToString("yyyy-MM-dd")"
                        onchange="this.form.submit()"
-                       disabled="@(Model.DoctorId == null)" />
+                       disabled="@(Model.ProfessionalId == null)" />
             </div>
         </form>
     </div>
 </div>
 
-@if (Model.SelectedDoctor != null && Model.SelectedService != null && Model.Date != null)
+@if (Model.SelectedProfessional != null && Model.SelectedService != null && Model.Date != null)
 {
     <div class="row g-4">
         <div class="col-lg-8">
@@ -82,7 +83,7 @@
                         {
                             <form asp-action="Book" method="post"
                                   onsubmit="return confirm('Saat @t.ToString("HH:mm") için randevu talebi oluşturulsun mu?');">
-                                <input type="hidden" name="doctorId" value="@Model.SelectedDoctor.Id" />
+                                <input type="hidden" name="professionalId" value="@Model.SelectedProfessional.Id" />
                                 <input type="hidden" name="serviceId" value="@Model.SelectedService.Id" />
                                 <input type="hidden" name="startTime" value="@t.ToString("s")" />
                                 <button type="submit" class="time-slot">@t.ToString("HH:mm")</button>
@@ -97,9 +98,12 @@
             <div class="panel-card">
                 <div class="panel-card-header"><i class="bi bi-receipt"></i> Özet</div>
                 <div class="px-4 py-2">
-                    <div class="summary-row"><span>Doktor</span><span>Dr. @Model.SelectedDoctor.FullName</span></div>
-                    <div class="summary-row"><span>Uzmanlık</span><span>@Model.SelectedDoctor.Specialty</span></div>
-                    <div class="summary-row"><span>Şube</span><span>@Model.SelectedDoctor.Branch?.Name</span></div>
+                    <div class="summary-row"><span>Personel</span><span>@Model.SelectedProfessional.DisplayName</span></div>
+                    @if (Model.SelectedProfessional is Doctor doctor)
+                    {
+                        <div class="summary-row"><span>Uzmanlık</span><span>@doctor.Specialty</span></div>
+                    }
+                    <div class="summary-row"><span>Şube</span><span>@Model.SelectedProfessional.Branch?.Name</span></div>
                     <div class="summary-row"><span>Hizmet</span><span>@Model.SelectedService.Name</span></div>
                     <div class="summary-row"><span>Süre</span><span>@Model.SelectedService.Duration.TotalMinutes dk</span></div>
                     <div class="summary-row"><span>Ücret</span><span>@Model.SelectedService.Price.ToString("N2") TL</span></div>

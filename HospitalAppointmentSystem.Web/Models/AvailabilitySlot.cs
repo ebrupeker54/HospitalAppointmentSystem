@@ -6,8 +6,8 @@ public class AvailabilitySlot
     public DateTime Start { get; private set; }
     public DateTime End { get; private set; }
 
-    public int DoctorId { get; set; }
-    public Doctor? Doctor { get; set; }
+    public int ProfessionalId { get; set; }
+    public HealthcareProfessional? Professional { get; set; }
 
     // Required by Entity Framework Core
     private AvailabilitySlot() { }

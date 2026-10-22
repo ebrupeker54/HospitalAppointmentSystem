@@ -1,15 +1,15 @@
-﻿@model HospitalAppointmentSystem.Web.ViewModels.DoctorDashboardViewModel
+﻿@model HospitalAppointmentSystem.Web.ViewModels.ProfessionalDashboardViewModel
 @using HospitalAppointmentSystem.Web.Models
 @{
-    ViewData["Title"] = "Doktor Paneli";
+    ViewData["Title"] = "Çalışma Panelim";
     var pending = Model.Appointments.Count(a => a.Status == AppointmentStatus.Pending);
     var today = Model.Appointments.Count(a => a.IsActive && a.StartTime.Date == DateTime.Today);
 }
 
 <div class="page-header">
     <div>
-        <h1>Doktor Paneli</h1>
-        <p>Hoş geldiniz, Dr. @User.Identity?.Name</p>
+        <h1>Çalışma Panelim</h1>
+        <p>Hoş geldiniz, @User.Identity?.Name</p>
     </div>
 </div>
 

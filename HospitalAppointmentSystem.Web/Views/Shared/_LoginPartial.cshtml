@@ -9,7 +9,7 @@
 {
     <ul class="navbar-nav align-items-md-center gap-2 mt-3 mt-md-0">
         <li class="nav-item">
-            <a class="btn btn-brand btn-sm px-3" asp-controller="@role" asp-action="Index">
+            <a class="btn btn-brand btn-sm px-3" asp-controller="@User.FindFirst("Dashboard")?.Value" asp-action="Index">
                 <i class="bi bi-grid-1x2-fill me-1"></i> Panelim
             </a>
         </li>

@@ -12,22 +12,22 @@ public class AppointmentService
         _repository = repository;
     }
 
-    public List<DateTime> GetAvailableStartTimes(Doctor doctor, MedicalService service, DateTime date)
+    public List<DateTime> GetAvailableStartTimes(HealthcareProfessional professional, MedicalService service, DateTime date)
     {
         var result = new List<DateTime>();
-        if (doctor.Branch == null || !doctor.CanPerform(service))
+        if (professional.Branch == null || !professional.CanPerform(service))
             return result;
 
-        var booked = _repository.GetActiveByDoctor(doctor.Id).ToList();
+        var booked = _repository.GetActiveByProfessional(professional.Id).ToList();
 
-        foreach (var slot in doctor.Availability.Where(s => s.Start.Date == date.Date).OrderBy(s => s.Start))
+        foreach (var slot in professional.Availability.Where(s => s.Start.Date == date.Date).OrderBy(s => s.Start))
         {
             for (var start = slot.Start; start + service.Duration <= slot.End; start += service.Duration)
             {
                 var end = start + service.Duration;
 
                 if (start <= DateTime.Now) continue;
-                if (!doctor.Branch.IsOpenBetween(start, end)) continue;
+                if (!professional.Branch.IsOpenBetween(start, end)) continue;
                 if (booked.Any(a => a.Overlaps(start, end))) continue;
 
                 result.Add(start);
@@ -37,93 +37,72 @@ public class AppointmentService
         return result;
     }
 
-    public Appointment Book(Patient patient, Doctor doctor, MedicalService service, DateTime start)
+    public Appointment Book(Patient patient, HealthcareProfessional professional, MedicalService service, DateTime start)
     {
         var end = start + service.Duration;
 
-        if (doctor.Branch == null)
-            throw new InvalidOperationException("The doctor is not assigned to a branch.");
+        if (professional.Branch == null)
+            throw new InvalidOperationException("Sağlık personeli herhangi bir şubeye atanmamış.");
 
-        if (!doctor.Branch.IsOpenBetween(start, end))
-            throw new AppointmentConflictException("The branch is closed at the selected time.");
+        if (!professional.Branch.IsOpenBetween(start, end))
+            throw new AppointmentConflictException("Şube seçilen saatte kapalı.");
 
-        if (!doctor.IsAvailable(start, end))
-            throw new AppointmentConflictException("The doctor is not available at the selected time.");
+        if (!professional.IsAvailable(start, end))
+            throw new AppointmentConflictException("Sağlık personeli seçilen saatte müsait değil.");
 
-        if (_repository.GetActiveByDoctor(doctor.Id).Any(a => a.Overlaps(start, end)))
-            throw new AppointmentConflictException("The doctor already has an appointment at this time.");
+        if (_repository.GetActiveByProfessional(professional.Id).Any(a => a.Overlaps(start, end)))
+            throw new AppointmentConflictException("Sağlık personelinin bu saatte başka bir randevusu var.");
 
         if (_repository.GetActiveByPatient(patient.Id).Any(a => a.Overlaps(start, end)))
-            throw new AppointmentConflictException("You already have another appointment at this time.");
+            throw new AppointmentConflictException("Bu saatte başka bir randevunuz zaten var.");
 
-        var appointment = new Appointment(patient, doctor, service, start);
+        var appointment = new Appointment(patient, professional, service, start);
         _repository.Add(appointment);
         return appointment;
-    }
-
-    public void Approve(int appointmentId)
-    {
-        var appointment = GetOrThrow(appointmentId);
-        appointment.Approve();
-        _repository.Update(appointment);
-    }
-
-    public void Reject(int appointmentId, string reason)
-    {
-        var appointment = GetOrThrow(appointmentId);
-        appointment.Reject(reason);
-        _repository.Update(appointment);
-    }
-
-    public void Cancel(int appointmentId)
-    {
-        var appointment = GetOrThrow(appointmentId);
-        appointment.Cancel();
-        _repository.Update(appointment);
     }
 
     public void CancelByPatient(int appointmentId, int patientId)
     {
         var appointment = GetOrThrow(appointmentId);
         if (appointment.PatientId != patientId)
-            throw new InvalidOperationException("You can only cancel your own appointments.");
+            throw new InvalidOperationException("Yalnızca kendi randevularınızı iptal edebilirsiniz.");
 
         appointment.Cancel();
         _repository.Update(appointment);
     }
 
-    public void ApproveByDoctor(int appointmentId, int doctorId)
+    public void ApproveByProfessional(int appointmentId, int professionalId)
     {
-        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
         appointment.Approve();
         _repository.Update(appointment);
     }
 
-    public void RejectByDoctor(int appointmentId, int doctorId, string reason)
+    public void RejectByProfessional(int appointmentId, int professionalId, string reason)
     {
-        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
         appointment.Reject(reason);
         _repository.Update(appointment);
     }
 
-    public void CompleteByDoctor(int appointmentId, int doctorId)
+    public void CompleteByProfessional(int appointmentId, int professionalId)
     {
-        var appointment = GetForDoctorOrThrow(appointmentId, doctorId);
+        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
         appointment.Complete();
         _repository.Update(appointment);
     }
 
-    private Appointment GetForDoctorOrThrow(int appointmentId, int doctorId)
+    private Appointment GetForProfessionalOrThrow(int appointmentId, int professionalId)
     {
         var appointment = GetOrThrow(appointmentId);
-        if (appointment.DoctorId != doctorId)
-            throw new InvalidOperationException("This appointment does not belong to you.");
+        if (appointment.ProfessionalId != professionalId)
+            throw new InvalidOperationException("Bu randevu size ait değil.");
         return appointment;
     }
 
     private Appointment GetOrThrow(int appointmentId)
     {
         return _repository.GetById(appointmentId)
-            ?? throw new KeyNotFoundException($"Appointment {appointmentId} was not found.");
+            ?? throw new KeyNotFoundException("Randevu bulunamadı.");
     }
 }

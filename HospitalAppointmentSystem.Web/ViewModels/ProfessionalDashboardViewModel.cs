@@ -2,7 +2,7 @@
 
 namespace HospitalAppointmentSystem.Web.ViewModels;
 
-public class DoctorDashboardViewModel
+public class ProfessionalDashboardViewModel
 {
     public List<Appointment> Appointments { get; set; } = new();
     public List<AvailabilitySlot> UpcomingSlots { get; set; } = new();

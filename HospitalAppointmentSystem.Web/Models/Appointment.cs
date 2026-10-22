@@ -7,8 +7,8 @@ public class Appointment
     public int PatientId { get; private set; }
     public Patient? Patient { get; private set; }
 
-    public int DoctorId { get; private set; }
-    public Doctor? Doctor { get; private set; }
+    public int ProfessionalId { get; private set; }
+    public HealthcareProfessional? Professional { get; private set; }
 
     public int MedicalServiceId { get; private set; }
     public MedicalService? MedicalService { get; private set; }
@@ -27,17 +27,17 @@ public class Appointment
     // Required by Entity Framework Core
     private Appointment() { }
 
-    public Appointment(Patient patient, Doctor doctor, MedicalService service, DateTime startTime)
+    public Appointment(Patient patient, HealthcareProfessional professional, MedicalService service, DateTime startTime)
     {
         if (startTime <= DateTime.Now)
             throw new ArgumentException("Randevu ileri bir tarih için alınmalıdır.");
-        if (!doctor.CanPerform(service))
-            throw new InvalidOperationException("Seçilen doktor bu hizmeti vermiyor.");
+        if (!professional.CanPerform(service))
+            throw new InvalidOperationException("Seçilen sağlık personeli bu hizmeti vermiyor.");
 
         Patient = patient;
         PatientId = patient.Id;
-        Doctor = doctor;
-        DoctorId = doctor.Id;
+        Professional = professional;
+        ProfessionalId = professional.Id;
         MedicalService = service;
         MedicalServiceId = service.Id;
 

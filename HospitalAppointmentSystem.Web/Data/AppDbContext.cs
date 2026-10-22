@@ -1,7 +1,5 @@
 ﻿using HospitalAppointmentSystem.Web.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace HospitalAppointmentSystem.Web.Data;
 
@@ -11,8 +9,10 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Patient> Patients => Set<Patient>();
-    public DbSet<Doctor> Doctors => Set<Doctor>();
     public DbSet<Admin> Admins => Set<Admin>();
+    public DbSet<HealthcareProfessional> HealthcareProfessionals => Set<HealthcareProfessional>();
+    public DbSet<Doctor> Doctors => Set<Doctor>();
+    public DbSet<HealthStaff> HealthStaffMembers => Set<HealthStaff>();
     public DbSet<Institution> Institutions => Set<Institution>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Department> Departments => Set<Department>();
@@ -29,12 +29,15 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // All user types are stored in a single "Users" table, separated by Role
+        // All user types share one "Users" table; the concrete class is stored in "UserType"
         modelBuilder.Entity<User>()
-            .HasDiscriminator(u => u.Role)
-            .HasValue<Patient>(UserRole.Patient)
-            .HasValue<Doctor>(UserRole.Doctor)
-            .HasValue<Admin>(UserRole.Admin);
+            .HasDiscriminator<string>("UserType")
+            .HasValue<Patient>("Patient")
+            .HasValue<Admin>("Admin")
+            .HasValue<Doctor>("Doctor")
+            .HasValue<Nurse>("Nurse")
+            .HasValue<RadiologyTechnician>("RadiologyTechnician")
+            .HasValue<LabTechnician>("LabTechnician");
 
         modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
 
@@ -61,9 +64,9 @@ public class AppDbContext : DbContext
                 .HasForeignKey(a => a.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasOne(a => a.Doctor)
+            entity.HasOne(a => a.Professional)
                 .WithMany()
-                .HasForeignKey(a => a.DoctorId)
+                .HasForeignKey(a => a.ProfessionalId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(a => a.MedicalService)

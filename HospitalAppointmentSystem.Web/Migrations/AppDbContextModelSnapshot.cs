@@ -22,19 +22,19 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("DoctorMedicalService", b =>
+            modelBuilder.Entity("HealthcareProfessionalMedicalService", b =>
                 {
-                    b.Property<int>("DoctorsId")
+                    b.Property<int>("ProfessionalsId")
                         .HasColumnType("integer");
 
                     b.Property<int>("ServicesId")
                         .HasColumnType("integer");
 
-                    b.HasKey("DoctorsId", "ServicesId");
+                    b.HasKey("ProfessionalsId", "ServicesId");
 
                     b.HasIndex("ServicesId");
 
-                    b.ToTable("DoctorMedicalService");
+                    b.ToTable("HealthcareProfessionalMedicalService");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Appointment", b =>
@@ -47,9 +47,6 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp without time zone");
@@ -64,6 +61,9 @@ namespace HospitalAppointmentSystem.Web.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)");
 
+                    b.Property<int>("ProfessionalId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("RejectionReason")
                         .HasColumnType("text");
 
@@ -76,11 +76,11 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId");
-
                     b.HasIndex("MedicalServiceId");
 
                     b.HasIndex("PatientId");
+
+                    b.HasIndex("ProfessionalId");
 
                     b.ToTable("Appointments");
                 });
@@ -93,18 +93,18 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("End")
                         .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("ProfessionalId")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Start")
                         .HasColumnType("timestamp without time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("ProfessionalId");
 
                     b.ToTable("AvailabilitySlots");
                 });
@@ -245,6 +245,11 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("character varying(34)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -252,7 +257,7 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
                     b.ToTable("Users");
 
-                    b.HasDiscriminator<int>("Role");
+                    b.HasDiscriminator<string>("UserType").HasValue("User");
 
                     b.UseTphMappingStrategy();
                 });
@@ -288,10 +293,10 @@ namespace HospitalAppointmentSystem.Web.Migrations
                 {
                     b.HasBaseType("HospitalAppointmentSystem.Web.Models.User");
 
-                    b.HasDiscriminator().HasValue(2);
+                    b.HasDiscriminator().HasValue("Admin");
                 });
 
-            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Doctor", b =>
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", b =>
                 {
                     b.HasBaseType("HospitalAppointmentSystem.Web.Models.User");
 
@@ -301,15 +306,11 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Specialty")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasIndex("BranchId");
 
                     b.HasIndex("DepartmentId");
 
-                    b.HasDiscriminator().HasValue(1);
+                    b.HasDiscriminator().HasValue("HealthcareProfessional");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Patient", b =>
@@ -323,14 +324,53 @@ namespace HospitalAppointmentSystem.Web.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasDiscriminator().HasValue(0);
+                    b.HasDiscriminator().HasValue("Patient");
                 });
 
-            modelBuilder.Entity("DoctorMedicalService", b =>
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Doctor", b =>
                 {
-                    b.HasOne("HospitalAppointmentSystem.Web.Models.Doctor", null)
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthcareProfessional");
+
+                    b.Property<string>("Specialty")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasDiscriminator().HasValue("Doctor");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.HealthStaff", b =>
+                {
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthcareProfessional");
+
+                    b.HasDiscriminator().HasValue("HealthStaff");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.LabTechnician", b =>
+                {
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthStaff");
+
+                    b.HasDiscriminator().HasValue("LabTechnician");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Nurse", b =>
+                {
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthStaff");
+
+                    b.HasDiscriminator().HasValue("Nurse");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.RadiologyTechnician", b =>
+                {
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthStaff");
+
+                    b.HasDiscriminator().HasValue("RadiologyTechnician");
+                });
+
+            modelBuilder.Entity("HealthcareProfessionalMedicalService", b =>
+                {
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", null)
                         .WithMany()
-                        .HasForeignKey("DoctorsId")
+                        .HasForeignKey("ProfessionalsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -343,12 +383,6 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Appointment", b =>
                 {
-                    b.HasOne("HospitalAppointmentSystem.Web.Models.Doctor", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("HospitalAppointmentSystem.Web.Models.MedicalService", "MedicalService")
                         .WithMany()
                         .HasForeignKey("MedicalServiceId")
@@ -361,22 +395,28 @@ namespace HospitalAppointmentSystem.Web.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Doctor");
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", "Professional")
+                        .WithMany()
+                        .HasForeignKey("ProfessionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("MedicalService");
 
                     b.Navigation("Patient");
+
+                    b.Navigation("Professional");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.AvailabilitySlot", b =>
                 {
-                    b.HasOne("HospitalAppointmentSystem.Web.Models.Doctor", "Doctor")
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", "Professional")
                         .WithMany("Availability")
-                        .HasForeignKey("DoctorId")
+                        .HasForeignKey("ProfessionalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Doctor");
+                    b.Navigation("Professional");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Branch", b =>
@@ -421,7 +461,7 @@ namespace HospitalAppointmentSystem.Web.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Doctor", b =>
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", b =>
                 {
                     b.HasOne("HospitalAppointmentSystem.Web.Models.Branch", "Branch")
                         .WithMany()
@@ -450,7 +490,7 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Navigation("Services");
                 });
 
-            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Doctor", b =>
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", b =>
                 {
                     b.Navigation("Availability");
                 });

@@ -17,15 +17,15 @@ public class EfAppointmentRepository : IAppointmentRepository
     {
         return _context.Appointments
             .Include(a => a.Patient)
-            .Include(a => a.Doctor)
+            .Include(a => a.Professional)
             .Include(a => a.MedicalService)
             .FirstOrDefault(a => a.Id == id);
     }
 
-    public IEnumerable<Appointment> GetActiveByDoctor(int doctorId)
+    public IEnumerable<Appointment> GetActiveByProfessional(int professionalId)
     {
         return _context.Appointments
-            .Where(a => a.DoctorId == doctorId
+            .Where(a => a.ProfessionalId == professionalId
                 && (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Approved))
             .ToList();
     }

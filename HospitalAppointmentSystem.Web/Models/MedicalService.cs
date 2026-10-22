@@ -11,7 +11,7 @@ public class MedicalService
     public int InstitutionId { get; set; }
     public Institution? Institution { get; set; }
 
-    public List<Doctor> Doctors { get; private set; } = new();
+    public List<HealthcareProfessional> Professionals { get; private set; } = new();
 
     // Required by Entity Framework Core
     private MedicalService() { }
