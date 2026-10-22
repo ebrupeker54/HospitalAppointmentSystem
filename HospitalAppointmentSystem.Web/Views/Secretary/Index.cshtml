@@ -1,0 +1,220 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.SecretaryDashboardViewModel
+@using HospitalAppointmentSystem.Web.Models
+@{
+    ViewData["Title"] = "Sekreter Paneli";
+    var pending = Model.Appointments.Count(a => a.Status == AppointmentStatus.Pending);
+    var today = Model.Appointments.Count(a => a.IsActive && a.StartTime.Date == DateTime.Today);
+    var upcoming = Model.Appointments.Count(a => a.IsActive && a.StartTime > DateTime.Now);
+}
+
+<div class="page-header">
+    <div>
+        <h1>Sekreter Paneli</h1>
+        <p>Hoş geldiniz, @User.Identity?.Name</p>
+    </div>
+    <a asp-action="Book" class="btn btn-brand"><i class="bi bi-telephone-plus me-1"></i> Telefonla Randevu</a>
+</div>
+
+<ul class="nav admin-nav mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(Model.SelectedDoctorId == null ? "active" : "")" asp-action="Index">
+            <i class="bi bi-people me-1"></i> Tüm Doktorlar
+        </a>
+    </li>
+    @foreach (var d in Model.Doctors)
+    {
+        <li class="nav-item">
+            <a class="nav-link @(d.Id == Model.SelectedDoctorId ? "active" : "")" asp-action="Index" asp-route-doctorId="@d.Id">
+                @d.DisplayName
+            </a>
+        </li>
+    }
+</ul>
+
+@if (!Model.Doctors.Any())
+{
+    <div class="alert alert-info">Henüz size atanmış bir doktor yok. Lütfen yöneticiyle iletişime geçin.</div>
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-4">
+        <div class="stat-card stat-amber">
+            <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="stat-value">@pending</div><div class="stat-label">Onay Bekleyen</div></div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="bi bi-calendar-day"></i></div>
+            <div><div class="stat-value">@today</div><div class="stat-label">Bugünkü Randevular</div></div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="stat-card stat-blue">
+            <div class="stat-icon"><i class="bi bi-calendar-week"></i></div>
+            <div><div class="stat-value">@upcoming</div><div class="stat-label">Yaklaşan Randevular</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="panel-card">
+            <div class="panel-card-header"><i class="bi bi-calendar-check"></i> Randevular</div>
+            @if (!Model.Appointments.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-inbox"></i>
+                    <p class="mb-0">Yaklaşan randevu bulunmuyor.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-modern align-middle">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                @if (Model.SelectedDoctorId == null)
+                                {
+                                    <th>Doktor</th>
+                                }
+                                <th>Hasta</th>
+                                <th>Hizmet</th>
+                                <th>Durum</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in Model.Appointments)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="cell-main">@a.StartTime.ToString("dd MMM yyyy")</div>
+                                        <small class="text-muted">@a.StartTime.ToString("HH:mm") - @a.EndTime.ToString("HH:mm")</small>
+                                    </td>
+                                    @if (Model.SelectedDoctorId == null)
+                                    {
+                                        <td>@a.Professional?.DisplayName</td>
+                                    }
+                                    <td>
+                                        <div class="cell-main">@a.Patient?.FullName</div>
+                                        <small class="text-muted"><i class="bi bi-telephone me-1"></i>@a.Patient?.PhoneNumber</small>
+                                    </td>
+                                    <td>@a.MedicalService?.Name</td>
+                                    <td><span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span></td>
+                                    <td class="text-end">
+                                        @if (a.Status == AppointmentStatus.Pending)
+                                        {
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <form asp-action="Approve" asp-route-id="@a.Id" asp-route-doctorId="@Model.SelectedDoctorId" method="post">
+                                                    <button type="submit" class="btn btn-sm btn-success">
+                                                        <i class="bi bi-check-lg me-1"></i>Onayla
+                                                    </button>
+                                                </form>
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        data-bs-toggle="modal" data-bs-target="#rejectModal"
+                                                        data-id="@a.Id" data-patient="@a.Patient?.FullName">
+                                                    <i class="bi bi-x-lg me-1"></i>Reddet
+                                                </button>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="panel-card">
+            <div class="panel-card-header"><i class="bi bi-clock"></i> Uygunluk Saatleri</div>
+            @if (Model.SelectedDoctor == null)
+            {
+                <div class="empty-state">
+                    <i class="bi bi-hand-index"></i>
+                    <p class="mb-0">Uygunluk saatlerini yönetmek için yukarıdan bir doktor seçin.</p>
+                </div>
+            }
+            else
+            {
+                <form asp-action="AddAvailability" method="post" class="p-3 border-bottom">
+                    <input type="hidden" name="doctorId" value="@Model.SelectedDoctor.Id" />
+                    <p class="small text-muted mb-2">@Model.SelectedDoctor.DisplayName için yeni aralık</p>
+                    <input type="date" name="date" class="form-control mb-2"
+                           min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    <div class="row g-2 mb-3">
+                        <div class="col">
+                            <input type="time" name="startTime" value="09:00" step="900" class="form-control" required />
+                        </div>
+                        <div class="col">
+                            <input type="time" name="endTime" value="12:00" step="900" class="form-control" required />
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-brand w-100"><i class="bi bi-plus-lg me-1"></i>Aralık Ekle</button>
+                </form>
+
+                <div class="slot-list">
+                    @if (!Model.Slots.Any())
+                    {
+                        <div class="empty-state"><p class="mb-0">Yaklaşan uygunluk aralığı yok.</p></div>
+                    }
+                    @foreach (var s in Model.Slots)
+                    {
+                        <div class="slot-item">
+                            <span>@s.Start.ToString("dd MMM, ddd")</span>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="slot-time">@s.Start.ToString("HH:mm") - @s.End.ToString("HH:mm")</span>
+                                <form asp-action="RemoveAvailability" method="post" onsubmit="return confirm('Bu aralık silinsin mi?');">
+                                    <input type="hidden" name="id" value="@s.Id" />
+                                    <input type="hidden" name="doctorId" value="@Model.SelectedDoctor.Id" />
+                                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Sil">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectModalLabel">Randevuyu Reddet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Hasta: <strong id="rejectPatient"></strong></p>
+                    <input type="hidden" name="id" id="rejectId" />
+                    <input type="hidden" name="doctorId" value="@Model.SelectedDoctorId" />
+                    <label class="form-label">Ret Gerekçesi</label>
+                    <textarea name="reason" class="form-control" rows="3" required
+                              placeholder="Örn. Doktorumuz o gün izinli. Lütfen başka bir gün seçin."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-danger">Reddet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('rejectModal').addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            document.getElementById('rejectId').value = button.dataset.id;
+            document.getElementById('rejectPatient').textContent = button.dataset.patient;
+        });
+    </script>
+}

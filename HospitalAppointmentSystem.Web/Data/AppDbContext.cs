@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<HealthcareProfessional> HealthcareProfessionals => Set<HealthcareProfessional>();
     public DbSet<Doctor> Doctors => Set<Doctor>();
     public DbSet<HealthStaff> HealthStaffMembers => Set<HealthStaff>();
+    public DbSet<Secretary> Secretaries => Set<Secretary>();
     public DbSet<Institution> Institutions => Set<Institution>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Department> Departments => Set<Department>();
@@ -38,7 +39,8 @@ public class AppDbContext : DbContext
             .HasValue<Doctor>("Doctor")
             .HasValue<Nurse>("Nurse")
             .HasValue<RadiologyTechnician>("RadiologyTechnician")
-            .HasValue<LabTechnician>("LabTechnician");
+            .HasValue<LabTechnician>("LabTechnician")
+             .HasValue<Secretary>("Secretary");
 
         modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
 
@@ -87,5 +89,10 @@ public class AppDbContext : DbContext
                 .HasForeignKey(r => r.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<Secretary>()
+            .HasMany(s => s.Doctors)
+            .WithMany(d => d.Secretaries)
+            .UsingEntity(j => j.ToTable("SecretaryDoctors"));
     }
 }

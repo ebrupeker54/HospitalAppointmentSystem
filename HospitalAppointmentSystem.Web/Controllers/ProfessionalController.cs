@@ -27,7 +27,8 @@ public class ProfessionalController : Controller
     }
 
     private int CurrentProfessionalId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
+    private HealthcareProfessional CurrentProfessional =>
+    _context.HealthcareProfessionals.Find(CurrentProfessionalId)!;
     public IActionResult Index()
     {
         var model = new ProfessionalDashboardViewModel
@@ -52,24 +53,24 @@ public class ProfessionalController : Controller
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Approve(int id) =>
-        Handle(() => _appointmentService.ApproveByProfessional(id, CurrentProfessionalId), "Randevu onaylandı.");
+    Handle(() => _appointmentService.Approve(id, CurrentProfessional), "Randevu onaylandı.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Reject(int id, string? reason) =>
-        Handle(() => _appointmentService.RejectByProfessional(id, CurrentProfessionalId, reason ?? string.Empty), "Randevu reddedildi.");
+        Handle(() => _appointmentService.Reject(id, CurrentProfessional, reason ?? string.Empty), "Randevu reddedildi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult Complete(int id) =>
-        Handle(() => _appointmentService.CompleteByProfessional(id, CurrentProfessionalId), "Randevu tamamlandı olarak işaretlendi.");
+        Handle(() => _appointmentService.Complete(id, CurrentProfessional), "Randevu tamamlandı olarak işaretlendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult AddAvailability(DateTime date, TimeSpan startTime, TimeSpan endTime) =>
-        Handle(() => _availabilityService.AddSlot(CurrentProfessionalId, date.Date + startTime, date.Date + endTime),
-            "Uygunluk aralığı eklendi.");
+        Handle(() => _availabilityService.AddSlot(CurrentProfessional, CurrentProfessionalId,
+            date.Date + startTime, date.Date + endTime), "Uygunluk aralığı eklendi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult RemoveAvailability(int id) =>
-        Handle(() => _availabilityService.RemoveSlot(id, CurrentProfessionalId), "Uygunluk aralığı silindi.");
+        Handle(() => _availabilityService.RemoveSlot(CurrentProfessional, id), "Uygunluk aralığı silindi.");
 
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult EnterResult(int id, string? findings) =>

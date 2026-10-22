@@ -3,7 +3,7 @@
 public class Doctor : HealthcareProfessional
 {
     public string Specialty { get; set; } = string.Empty;
-
+    public List<Secretary> Secretaries { get; private set; } = new();
     public Doctor()
     {
         Role = UserRole.Doctor;

@@ -22,6 +22,21 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("DoctorSecretary", b =>
+                {
+                    b.Property<int>("DoctorsId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecretariesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("DoctorsId", "SecretariesId");
+
+                    b.HasIndex("SecretariesId");
+
+                    b.ToTable("SecretaryDoctors", (string)null);
+                });
+
             modelBuilder.Entity("HealthcareProfessionalMedicalService", b =>
                 {
                     b.Property<int>("ProfessionalsId")
@@ -336,9 +351,11 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.HasBaseType("HospitalAppointmentSystem.Web.Models.User");
 
                     b.Property<int?>("BranchId")
+                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer");
 
                     b.Property<int?>("DepartmentId")
+                        .ValueGeneratedOnUpdateSometimes()
                         .HasColumnType("integer");
 
                     b.HasIndex("BranchId");
@@ -360,6 +377,25 @@ namespace HospitalAppointmentSystem.Web.Migrations
                         .HasColumnType("text");
 
                     b.HasDiscriminator().HasValue("Patient");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Secretary", b =>
+                {
+                    b.HasBaseType("HospitalAppointmentSystem.Web.Models.User");
+
+                    b.Property<int?>("BranchId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("DepartmentId")
+                        .ValueGeneratedOnUpdateSometimes()
+                        .HasColumnType("integer");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasDiscriminator().HasValue("Secretary");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Doctor", b =>
@@ -399,6 +435,21 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.HasBaseType("HospitalAppointmentSystem.Web.Models.HealthStaff");
 
                     b.HasDiscriminator().HasValue("RadiologyTechnician");
+                });
+
+            modelBuilder.Entity("DoctorSecretary", b =>
+                {
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Doctor", null)
+                        .WithMany()
+                        .HasForeignKey("DoctorsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Secretary", null)
+                        .WithMany()
+                        .HasForeignKey("SecretariesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("HealthcareProfessionalMedicalService", b =>
@@ -516,6 +567,21 @@ namespace HospitalAppointmentSystem.Web.Migrations
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", b =>
+                {
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Secretary", b =>
                 {
                     b.HasOne("HospitalAppointmentSystem.Web.Models.Branch", "Branch")
                         .WithMany()

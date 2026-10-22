@@ -13,8 +13,11 @@ public class AvailabilityService
         _context = context;
     }
 
-    public void AddSlot(int professionalId, DateTime start, DateTime end)
+    public void AddSlot(IAppointmentManager manager, int professionalId, DateTime start, DateTime end)
     {
+        if (!manager.CanManage(professionalId))
+            throw new InvalidOperationException("Bu personelin uygunluklarını yönetme yetkiniz yok.");
+
         if (start <= DateTime.Now)
             throw new ArgumentException("Uygunluk aralığı ileri bir tarih için olmalıdır.");
 
@@ -28,13 +31,16 @@ public class AvailabilityService
         _context.SaveChanges();
     }
 
-    public void RemoveSlot(int slotId, int professionalId)
+    public void RemoveSlot(IAppointmentManager manager, int slotId)
     {
-        var slot = _context.AvailabilitySlots.FirstOrDefault(s => s.Id == slotId && s.ProfessionalId == professionalId)
+        var slot = _context.AvailabilitySlots.FirstOrDefault(s => s.Id == slotId)
             ?? throw new KeyNotFoundException("Uygunluk aralığı bulunamadı.");
 
+        if (!manager.CanManage(slot.ProfessionalId))
+            throw new InvalidOperationException("Bu personelin uygunluklarını yönetme yetkiniz yok.");
+
         var hasActiveAppointments = _context.Appointments.Any(a =>
-            a.ProfessionalId == professionalId
+            a.ProfessionalId == slot.ProfessionalId
             && (a.Status == AppointmentStatus.Pending || a.Status == AppointmentStatus.Approved)
             && a.StartTime < slot.End && slot.Start < a.EndTime);
 

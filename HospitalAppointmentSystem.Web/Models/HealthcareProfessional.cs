@@ -1,6 +1,6 @@
 ﻿namespace HospitalAppointmentSystem.Web.Models;
 
-public abstract class HealthcareProfessional : Staff
+public abstract class HealthcareProfessional : Staff, IAppointmentManager
 {
     public List<MedicalService> Services { get; private set; } = new();
     public List<AvailabilitySlot> Availability { get; private set; } = new();
@@ -30,6 +30,7 @@ public abstract class HealthcareProfessional : Staff
     }
 
     public bool CanPerform(MedicalService service) => Services.Contains(service);
+    public bool CanManage(int professionalId) => professionalId == Id;
 
     public void SetServices(IEnumerable<MedicalService> services)
     {

@@ -42,14 +42,18 @@ public static class DbSeeder
         foreach (var service in new[] { examination, xray, ultrasound, bloodTest, injection, dressing })
             institution.AddService(service);
 
+        var drEbru = Setup(new Doctor { Specialty = "Dahiliye" }, "Ebru", "Yazıcı", "ebru.yazici@hospital.com",
+    "Doctor123!", central, internalCentral, examination);
+        var drMehmet = Setup(new Doctor { Specialty = "Radyoloji" }, "Mehmet", "Kaya", "mehmet.kaya@hospital.com",
+            "Doctor123!", central, radiology, ultrasound);
+        var drZeynep = Setup(new Doctor { Specialty = "Dahiliye" }, "Zeynep", "Demir", "zeynep.demir@hospital.com",
+            "Doctor123!", north, internalNorth, examination, bloodTest);
+
         var professionals = new HealthcareProfessional[]
         {
-            Setup(new Doctor { Specialty = "Dahiliye" }, "Ebru", "Yazıcı", "ebru.yazici@hospital.com",
-                "Doctor123!", central, internalCentral, examination),
-            Setup(new Doctor { Specialty = "Radyoloji" }, "Mehmet", "Kaya", "mehmet.kaya@hospital.com",
-                "Doctor123!", central, radiology, ultrasound),
-            Setup(new Doctor { Specialty = "Dahiliye" }, "Zeynep", "Demir", "zeynep.demir@hospital.com",
-                "Doctor123!", north, internalNorth, examination, bloodTest),
+            drEbru,
+            drMehmet,
+            drZeynep,
             Setup(new Nurse(), "Elif", "Şahin", "elif.sahin@hospital.com",
                 "Staff123!", central, internalCentral, injection, dressing),
             Setup(new RadiologyTechnician(), "Burak", "Aydın", "burak.aydin@hospital.com",
@@ -57,6 +61,18 @@ public static class DbSeeder
             Setup(new LabTechnician(), "Can", "Öztürk", "can.ozturk@hospital.com",
                 "Staff123!", north, laboratory, bloodTest)
         };
+
+        var secretary = new Secretary
+        {
+            FirstName = "Selin",
+            LastName = "Koç",
+            Email = "selin.koc@hospital.com",
+            PhoneNumber = "0264 000 20 00",
+            Branch = central
+        };
+        secretary.SetPassword("Staff123!");
+        secretary.AssignDoctor(drEbru);
+        secretary.AssignDoctor(drMehmet);
 
         var admin = new Admin
         {
@@ -70,6 +86,7 @@ public static class DbSeeder
         context.Institutions.Add(institution);
         context.HealthcareProfessionals.AddRange(professionals);
         context.Admins.Add(admin);
+        context.Secretaries.Add(secretary);
 
         if (!context.Users.Any(u => u.Email == "patient@test.com"))
         {

@@ -71,32 +71,35 @@ public class AppointmentService
         _repository.Update(appointment);
     }
 
-    public void ApproveByProfessional(int appointmentId, int professionalId)
+    public void Approve(int appointmentId, IAppointmentManager manager)
     {
-        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
+        var appointment = GetManagedOrThrow(appointmentId, manager);
         appointment.Approve();
         _repository.Update(appointment);
     }
 
-    public void RejectByProfessional(int appointmentId, int professionalId, string reason)
+    public void Reject(int appointmentId, IAppointmentManager manager, string reason)
     {
-        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
+        var appointment = GetManagedOrThrow(appointmentId, manager);
         appointment.Reject(reason);
         _repository.Update(appointment);
     }
 
-    public void CompleteByProfessional(int appointmentId, int professionalId)
+    public void Complete(int appointmentId, IAppointmentManager manager)
     {
-        var appointment = GetForProfessionalOrThrow(appointmentId, professionalId);
+        if (manager is not HealthcareProfessional)
+            throw new InvalidOperationException("Randevuyu yalnızca hizmeti veren sağlık personeli tamamlayabilir.");
+
+        var appointment = GetManagedOrThrow(appointmentId, manager);
         appointment.Complete();
         _repository.Update(appointment);
     }
 
-    private Appointment GetForProfessionalOrThrow(int appointmentId, int professionalId)
+    private Appointment GetManagedOrThrow(int appointmentId, IAppointmentManager manager)
     {
         var appointment = GetOrThrow(appointmentId);
-        if (appointment.ProfessionalId != professionalId)
-            throw new InvalidOperationException("Bu randevu size ait değil.");
+        if (!manager.CanManage(appointment.ProfessionalId))
+            throw new InvalidOperationException("Bu randevuyu yönetme yetkiniz yok.");
         return appointment;
     }
 
