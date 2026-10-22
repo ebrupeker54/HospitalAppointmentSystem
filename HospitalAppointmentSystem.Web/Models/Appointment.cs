@@ -20,7 +20,7 @@ public class Appointment
     public AppointmentStatus Status { get; private set; }
     public string? RejectionReason { get; private set; }
     public DateTime CreatedAt { get; private set; }
-
+    public TestResult? Result { get; private set; }
     public TimeSpan Duration => EndTime - StartTime;
     public bool IsActive => Status == AppointmentStatus.Pending || Status == AppointmentStatus.Approved;
 

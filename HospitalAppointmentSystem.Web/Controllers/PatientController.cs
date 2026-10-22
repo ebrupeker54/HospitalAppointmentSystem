@@ -28,6 +28,7 @@ public class PatientController : Controller
         var appointments = _context.Appointments
             .Include(a => a.Professional).ThenInclude(p => p!.Branch)
             .Include(a => a.MedicalService)
+            .Include(a => a.Result)
             .Where(a => a.PatientId == CurrentPatientId)
             .OrderByDescending(a => a.StartTime)
             .ToList();
@@ -117,6 +118,20 @@ public class PatientController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    public IActionResult Result(int id)
+    {
+        var appointment = _context.Appointments
+            .Include(a => a.Result).ThenInclude(r => r!.Author)
+            .Include(a => a.MedicalService)
+            .Include(a => a.Professional).ThenInclude(p => p!.Branch)
+            .FirstOrDefault(a => a.Id == id && a.PatientId == CurrentPatientId);
+
+        if (appointment?.Result == null)
+            return NotFound();
+
+        return View(appointment);
     }
 
     private HealthcareProfessional? LoadProfessional(int id)

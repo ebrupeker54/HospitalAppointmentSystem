@@ -88,6 +88,24 @@
                                                 </button>
                                             </form>
                                         }
+                                        else if (a.Status == AppointmentStatus.Completed && Model.CanEnterResults)
+                                        {
+                                            if (a.Result == null)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-brand"
+                                                        data-bs-toggle="modal" data-bs-target="#resultModal"
+                                                        data-id="@a.Id" data-patient="@a.Patient?.FullName"
+                                                        data-service="@a.MedicalService?.Name">
+                                                    <i class="bi bi-file-earmark-plus me-1"></i>Sonuç Gir
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-success border">
+                                                    <i class="bi bi-file-earmark-check me-1"></i>Sonuç girildi
+                                                </span>
+                                            }
+                                        }
                                     </td>
                                 </tr>
                             }
@@ -173,6 +191,33 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <form asp-action="EnterResult" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultModalLabel">Sonuç Gir</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted mb-1">Hasta: <strong id="resultPatient"></strong></p>
+                    <p class="text-muted">Hizmet: <strong id="resultService"></strong></p>
+                    <input type="hidden" name="id" id="resultId" />
+                    <label class="form-label">Bulgular</label>
+                    <textarea name="findings" class="form-control" rows="8" required
+                              placeholder="Örn. Hemoglobin: 13,8 g/dL (12-16)&#10;Glukoz: 92 mg/dL (70-100)&#10;Değerler normal sınırlar içindedir."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-brand">Sonucu Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
     <script>
         document.getElementById('rejectModal').addEventListener('show.bs.modal', function (event) {
@@ -180,5 +225,12 @@
             document.getElementById('rejectId').value = button.dataset.id;
             document.getElementById('rejectPatient').textContent = button.dataset.patient;
         });
+
+                document.getElementById('resultModal').addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    document.getElementById('resultId').value = button.dataset.id;
+                    document.getElementById('resultPatient').textContent = button.dataset.patient;
+                    document.getElementById('resultService').textContent = button.dataset.service;
+                });
     </script>
 }

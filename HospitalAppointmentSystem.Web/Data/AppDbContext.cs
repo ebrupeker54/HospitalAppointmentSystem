@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<MedicalService> MedicalServices => Set<MedicalService>();
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
+    public DbSet<TestResult> TestResults => Set<TestResult>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -72,6 +73,18 @@ public class AppDbContext : DbContext
             entity.HasOne(a => a.MedicalService)
                 .WithMany()
                 .HasForeignKey(a => a.MedicalServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<TestResult>(entity =>
+        {
+            entity.HasOne(r => r.Appointment)
+                .WithOne(a => a.Result)
+                .HasForeignKey<TestResult>(r => r.AppointmentId);
+
+            entity.HasOne(r => r.Author)
+                .WithMany()
+                .HasForeignKey(r => r.AuthorId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
     }

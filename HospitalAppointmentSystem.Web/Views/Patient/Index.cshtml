@@ -80,15 +80,23 @@
                                 }
                             </td>
                             <td class="text-end">
-                                @if (a.IsActive && a.StartTime > DateTime.Now)
-                                {
-                                    <form asp-action="Cancel" asp-route-id="@a.Id" method="post"
-                                          onsubmit="return confirm('Bu randevuyu iptal etmek istediğinizden emin misiniz?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-x-lg me-1"></i>İptal Et
-                                        </button>
-                                    </form>
-                                }
+                                <div class="d-flex gap-2 justify-content-end">
+                                    @if (a.Result != null)
+                                    {
+                                        <a asp-action="Result" asp-route-id="@a.Id" class="btn btn-sm btn-outline-brand">
+                                            <i class="bi bi-file-earmark-medical me-1"></i>Sonuç
+                                        </a>
+                                    }
+                                    @if (a.IsActive && a.StartTime > DateTime.Now)
+                                    {
+                                        <form asp-action="Cancel" asp-route-id="@a.Id" method="post"
+                                              onsubmit="return confirm('Bu randevuyu iptal etmek istediğinizden emin misiniz?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-x-lg me-1"></i>İptal Et
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }

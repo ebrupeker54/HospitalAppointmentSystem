@@ -37,14 +37,25 @@ public static class DbSeeder
         var xray = new MedicalService("Röntgen", ServiceCategory.Radiology, TimeSpan.FromMinutes(15), 750m);
         var ultrasound = new MedicalService("Ultrason", ServiceCategory.Radiology, TimeSpan.FromMinutes(30), 1200m);
         var bloodTest = new MedicalService("Kan Tahlili", ServiceCategory.Laboratory, TimeSpan.FromMinutes(10), 300m);
-        foreach (var service in new[] { examination, xray, ultrasound, bloodTest })
+        var injection = new MedicalService("Enjeksiyon", ServiceCategory.Nursing, TimeSpan.FromMinutes(10), 150m);
+        var dressing = new MedicalService("Pansuman", ServiceCategory.Nursing, TimeSpan.FromMinutes(15), 200m);
+        foreach (var service in new[] { examination, xray, ultrasound, bloodTest, injection, dressing })
             institution.AddService(service);
 
-        var doctors = new[]
+        var professionals = new HealthcareProfessional[]
         {
-            CreateDoctor("Ebru", "Yazıcı", "ebru.yazici@hospital.com", "Dahiliye", central, internalCentral, examination),
-            CreateDoctor("Mehmet", "Kaya", "mehmet.kaya@hospital.com", "Radyoloji", central, radiology, xray, ultrasound),
-            CreateDoctor("Zeynep", "Demir", "zeynep.demir@hospital.com", "Dahiliye", north, internalNorth, examination, bloodTest)
+            Setup(new Doctor { Specialty = "Dahiliye" }, "Ebru", "Yazıcı", "ebru.yazici@hospital.com",
+                "Doctor123!", central, internalCentral, examination),
+            Setup(new Doctor { Specialty = "Radyoloji" }, "Mehmet", "Kaya", "mehmet.kaya@hospital.com",
+                "Doctor123!", central, radiology, ultrasound),
+            Setup(new Doctor { Specialty = "Dahiliye" }, "Zeynep", "Demir", "zeynep.demir@hospital.com",
+                "Doctor123!", north, internalNorth, examination, bloodTest),
+            Setup(new Nurse(), "Elif", "Şahin", "elif.sahin@hospital.com",
+                "Staff123!", central, internalCentral, injection, dressing),
+            Setup(new RadiologyTechnician(), "Burak", "Aydın", "burak.aydin@hospital.com",
+                "Staff123!", central, radiology, xray),
+            Setup(new LabTechnician(), "Can", "Öztürk", "can.ozturk@hospital.com",
+                "Staff123!", north, laboratory, bloodTest)
         };
 
         var admin = new Admin
@@ -57,7 +68,7 @@ public static class DbSeeder
         admin.SetPassword("Admin123!");
 
         context.Institutions.Add(institution);
-        context.Doctors.AddRange(doctors);
+        context.HealthcareProfessionals.AddRange(professionals);
         context.Admins.Add(admin);
 
         if (!context.Users.Any(u => u.Email == "patient@test.com"))
@@ -78,23 +89,20 @@ public static class DbSeeder
         context.SaveChanges();
     }
 
-    private static Doctor CreateDoctor(string firstName, string lastName, string email, string specialty,
+    private static T Setup<T>(T professional, string firstName, string lastName, string email, string password,
         Branch branch, Department department, params MedicalService[] services)
+        where T : HealthcareProfessional
     {
-        var doctor = new Doctor
-        {
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            PhoneNumber = "0264 000 10 00",
-            Specialty = specialty,
-            Branch = branch,
-            Department = department
-        };
-        doctor.SetPassword("Doctor123!");
+        professional.FirstName = firstName;
+        professional.LastName = lastName;
+        professional.Email = email;
+        professional.PhoneNumber = "0264 000 10 00";
+        professional.Branch = branch;
+        professional.Department = department;
+        professional.SetPassword(password);
 
         foreach (var service in services)
-            doctor.AddService(service);
+            professional.AddService(service);
 
         for (var i = 1; i <= 14; i++)
         {
@@ -102,10 +110,10 @@ public static class DbSeeder
             if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
                 continue;
 
-            doctor.AddAvailability(new AvailabilitySlot(day.AddHours(9), day.AddHours(12)));
-            doctor.AddAvailability(new AvailabilitySlot(day.AddHours(13), day.AddHours(17)));
+            professional.AddAvailability(new AvailabilitySlot(day.AddHours(9), day.AddHours(12)));
+            professional.AddAvailability(new AvailabilitySlot(day.AddHours(13), day.AddHours(17)));
         }
 
-        return doctor;
+        return professional;
     }
 }

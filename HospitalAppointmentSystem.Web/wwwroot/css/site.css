@@ -507,3 +507,28 @@ a {
     background-color: var(--brand);
     border-color: var(--brand);
 }
+
+
+/* ---------- Results ---------- */
+.result-findings {
+    white-space: pre-line;
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    line-height: 1.7;
+}
+
+@media print {
+    .app-navbar, .app-footer, .no-print, .alert {
+        display: none !important;
+    }
+
+    body {
+        background: #fff;
+    }
+
+    .result-card {
+        border: none;
+    }
+}

@@ -6,4 +6,5 @@ public class ProfessionalDashboardViewModel
 {
     public List<Appointment> Appointments { get; set; } = new();
     public List<AvailabilitySlot> UpcomingSlots { get; set; } = new();
+    public bool CanEnterResults { get; set; }
 }

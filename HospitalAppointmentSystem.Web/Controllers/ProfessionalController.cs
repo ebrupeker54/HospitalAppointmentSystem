@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using HospitalAppointmentSystem.Web.Models;
+using System.Security.Claims;
 using HospitalAppointmentSystem.Web.Data;
 using HospitalAppointmentSystem.Web.Services;
 using HospitalAppointmentSystem.Web.ViewModels;
@@ -14,13 +15,15 @@ public class ProfessionalController : Controller
     private readonly AppDbContext _context;
     private readonly AppointmentService _appointmentService;
     private readonly AvailabilityService _availabilityService;
+    private readonly ResultService _resultService;
 
     public ProfessionalController(AppDbContext context, AppointmentService appointmentService,
-        AvailabilityService availabilityService)
+        AvailabilityService availabilityService, ResultService resultService)
     {
         _context = context;
         _appointmentService = appointmentService;
         _availabilityService = availabilityService;
+        _resultService = resultService;
     }
 
     private int CurrentProfessionalId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -32,6 +35,7 @@ public class ProfessionalController : Controller
             Appointments = _context.Appointments
                 .Include(a => a.Patient)
                 .Include(a => a.MedicalService)
+                .Include(a => a.Result)
                 .Where(a => a.ProfessionalId == CurrentProfessionalId)
                 .OrderBy(a => a.StartTime)
                 .ToList(),
@@ -39,7 +43,8 @@ public class ProfessionalController : Controller
                 .Where(s => s.ProfessionalId == CurrentProfessionalId && s.End > DateTime.Now)
                 .OrderBy(s => s.Start)
                 .Take(30)
-                .ToList()
+                .ToList(),
+            CanEnterResults = _context.HealthcareProfessionals.Find(CurrentProfessionalId) is IResultEntry
         };
 
         return View(model);
@@ -65,6 +70,10 @@ public class ProfessionalController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult RemoveAvailability(int id) =>
         Handle(() => _availabilityService.RemoveSlot(id, CurrentProfessionalId), "Uygunluk aralığı silindi.");
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult EnterResult(int id, string? findings) =>
+    Handle(() => _resultService.EnterResult(id, CurrentProfessionalId, findings), "Sonuç kaydedildi.");
 
     private IActionResult Handle(Action action, string successMessage)
     {

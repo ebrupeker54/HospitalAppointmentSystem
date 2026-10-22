@@ -214,6 +214,41 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.ToTable("MedicalServices");
                 });
 
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.TestResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Findings")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("TestResults");
+                });
+
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -452,6 +487,25 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Navigation("Institution");
                 });
 
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.TestResult", b =>
+                {
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Appointment", "Appointment")
+                        .WithOne("Result")
+                        .HasForeignKey("HospitalAppointmentSystem.Web.Models.TestResult", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.HealthcareProfessional", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+
+                    b.Navigation("Author");
+                });
+
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.WorkingHours", b =>
                 {
                     b.HasOne("HospitalAppointmentSystem.Web.Models.Branch", null)
@@ -474,6 +528,11 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Appointment", b =>
+                {
+                    b.Navigation("Result");
                 });
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Branch", b =>
