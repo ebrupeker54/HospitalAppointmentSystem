@@ -1,6 +1,6 @@
 ﻿# MediPoint – Hospital Appointment System
 
-A web-based hospital and clinic appointment system developed as an **Object-Oriented Programming** course project. It supports both single clinics and multi-branch healthcare institutions.
+A web-based hospital and clinic appointment system developed as an **Object-Oriented Programming** course project. It supports both single clinics and multi-branch healthcare institutions, with seven user types organized in a multi-level class hierarchy.
 
 > The source code is written in English, while the user interface is in **Turkish**, since the application targets Turkish users.
 
@@ -10,48 +10,63 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 |---|---|
 | ![Home](docs/screenshots/home.png) | ![Booking](docs/screenshots/booking.png) |
 
-| Doctor Panel | Admin Panel |
+| Doctor Panel | Secretary Panel |
 |---|---|
-| ![Doctor Panel](docs/screenshots/doctor-panel.png) | ![Admin Panel](docs/screenshots/admin-panel.png) |
+| ![Doctor Panel](docs/screenshots/doctor-panel.png) | ![Secretary Panel](docs/screenshots/secretary-panel.png) |
+
+| Test Result | Admin Panel |
+|---|---|
+| ![Test Result](docs/screenshots/test-result.png) | ![Admin Panel](docs/screenshots/admin-panel.png) |
 
 ## Features
 
 **Patient**
 - Self-registration and login
-- Step-by-step booking: branch → service → doctor → date → available time
+- Step-by-step booking: branch → service → healthcare professional → date → available time
 - Only conflict-free time slots are offered
 - Appointment history with status tracking and cancellation
+- Viewing and printing laboratory and imaging results
 
-**Doctor**
-- Approve or reject (with a reason) pending appointment requests
-- Mark approved appointments as completed
+**Doctor and health staff** (nurse, radiology technician, lab technician)
+- Approve, reject (with a reason) and complete appointments
 - Manage personal availability slots
+- Lab and radiology technicians can enter results for completed appointments
+- Each type can only offer services in its own field (e.g. a lab technician cannot be assigned an X-ray)
+
+**Secretary**
+- Assigned to one or more doctors in the same branch
+- Sees the assigned doctors' appointments with patient contact details
+- Approves or rejects appointment requests and manages the doctors' availability
+- Books appointments on behalf of patients (phone booking), found by national ID
 
 **Admin**
-- Manage institutions (hospital/clinic) and their branches
-- Define departments and weekly working hours for each branch
-- Define medical services with duration and price
-- Register doctors and assign them to branches, departments and services
+- Manages institutions (hospital/clinic), branches, departments and weekly working hours
+- Defines medical services with category, duration and price
+- Registers all staff types and assigns them to branches, departments, services or doctors
 
 **Business rules**
-- An appointment must fit within the branch's working hours and the doctor's availability
-- No overlapping appointments for the same doctor or the same patient
+- An appointment must fit within the branch's working hours and the professional's availability
+- No overlapping appointments for the same professional or the same patient
 - Appointment lifecycle: `Pending → Approved → Completed`, or `Rejected` / `Cancelled`
 - The price is stored with the appointment, so later price changes do not affect existing appointments
 
 ## Object-Oriented Design
 
-| Principle | Where it is used |
+| Concept | Where it is used |
 |---|---|
-| **Abstraction** | `User` is an abstract class; `IAppointmentRepository` defines a contract without implementation |
-| **Inheritance** | `Patient`, `Doctor` and `Admin` inherit from `User`; `AppointmentConflictException` inherits from `Exception` |
-| **Polymorphism** | `GetRoleDescription()` and `DashboardController` are overridden by each user type; after login, each user is redirected to their own panel without any `if/else` on roles |
-| **Encapsulation** | State changes only through methods with validation (`Appointment.Approve()`, `Doctor.AddAvailability()`, `MedicalService.UpdatePricing()`); collections and status fields have private setters |
+| **Abstraction** | `User`, `Staff`, `HealthcareProfessional` and `HealthStaff` are abstract; `IAppointmentManager`, `IResultEntry` and `IAppointmentRepository` define contracts without implementation |
+| **Multi-level inheritance** | Up to four levels: `LabTechnician → HealthStaff → HealthcareProfessional → Staff → User`. Shared behavior is written once at the right level (e.g. branch assignment in `Staff`, services and availability in `HealthcareProfessional`) |
+| **Polymorphism** | `CanOffer()` decides which services each type may offer; `Title` builds each `DisplayName` ("Dr. …", "Laborant …"); `DashboardController` sends each user to the right panel; `GetRoleDescription()` describes each role |
+| **Interfaces as capabilities** | `IResultEntry` is implemented only by the technicians, so a nurse (a sibling class) cannot write results. `IAppointmentManager` is implemented by two different branches of the hierarchy (`HealthcareProfessional` and `Secretary`), and `AppointmentService` asks `CanManage()` instead of checking roles |
+| **Encapsulation** | State changes only through validating methods (`Appointment.Approve()`, `HealthcareProfessional.AddService()`, `Secretary.AssignDoctor()`); collections and status fields have private setters |
+| **`sealed override`** | `HealthStaff` seals `CanOffer()`; subclasses only declare their `AllowedCategory` and cannot change the rule itself |
 | **Composition** | An `Institution` has `Branch`es; a `Branch` has `Department`s and `WorkingHours` |
+| **Factory pattern** | `StaffFactory.Create(type)` decides which concrete class to instantiate when an admin registers a new employee |
+| **Generics** | The seeder's `Setup<T>() where T : HealthcareProfessional` creates any professional type with one method |
 
-The project also follows several **SOLID** principles: business logic lives in services (*Single Responsibility*), new user types can be added without changing the login code (*Open/Closed*), and `AppointmentService` depends on the `IAppointmentRepository` abstraction rather than on Entity Framework directly (*Dependency Inversion*).
+The project also follows **SOLID** principles: business logic lives in services (*Single Responsibility*); new staff types can be added without changing the booking or approval code (*Open/Closed*); `AppointmentService` works with any `HealthcareProfessional` subtype (*Liskov Substitution*); and services depend on abstractions such as `IAppointmentRepository` and `IAppointmentManager` (*Dependency Inversion*).
 
-### Class Diagram
+### User Hierarchy and Interfaces
 
 ```mermaid
 classDiagram
@@ -72,15 +87,81 @@ classDiagram
         +string NationalId
         +DateTime DateOfBirth
     }
-    class Doctor {
-        +string Specialty
+    class Admin
+    class Staff {
+        <<abstract>>
+        +Branch Branch
+        +Department Department
+        +string Title
+        +string DisplayName
         +AssignTo(branch, department)
+    }
+    class HealthcareProfessional {
+        <<abstract>>
+        +List~MedicalService~ Services
+        +List~AvailabilitySlot~ Availability
+        +CanOffer(service) bool*
         +AddService(service)
         +AddAvailability(slot)
         +IsAvailable(start, end) bool
-        +CanPerform(service) bool
     }
-    class Admin
+    class Doctor {
+        +string Specialty
+        +CanOffer(service) bool
+    }
+    class HealthStaff {
+        <<abstract>>
+        #ServiceCategory AllowedCategory
+        +CanOffer(service) bool
+    }
+    class Nurse
+    class RadiologyTechnician
+    class LabTechnician
+    class Secretary {
+        +List~Doctor~ Doctors
+        +AssignDoctor(doctor)
+        +SetDoctors(doctors)
+    }
+    class IAppointmentManager {
+        <<interface>>
+        +CanManage(professionalId) bool
+    }
+    class IResultEntry {
+        <<interface>>
+        +string ResultTitle
+        +WriteResult(appointment, findings) TestResult
+    }
+    class StaffFactory {
+        <<static>>
+        +Create(type) Staff$
+        +TypeOf(staff) StaffType$
+    }
+
+    User <|-- Patient
+    User <|-- Admin
+    User <|-- Staff
+    Staff <|-- HealthcareProfessional
+    Staff <|-- Secretary
+    HealthcareProfessional <|-- Doctor
+    HealthcareProfessional <|-- HealthStaff
+    HealthStaff <|-- Nurse
+    HealthStaff <|-- RadiologyTechnician
+    HealthStaff <|-- LabTechnician
+
+    IAppointmentManager <|.. HealthcareProfessional
+    IAppointmentManager <|.. Secretary
+    IResultEntry <|.. RadiologyTechnician
+    IResultEntry <|.. LabTechnician
+
+    Secretary "*" -- "*" Doctor : manages
+    StaffFactory ..> Staff : creates
+```
+
+### Domain Model
+
+```mermaid
+classDiagram
+    direction LR
 
     class Institution {
         +string Name
@@ -90,62 +171,54 @@ classDiagram
     }
     class Branch {
         +string Name
-        +string Address
         +AddDepartment(department)
         +SetWorkingHours(hours)
         +IsOpenBetween(start, end) bool
     }
-    class Department {
-        +string Name
-    }
+    class Department
     class WorkingHours {
         +DayOfWeek Day
         +TimeOnly OpenTime
         +TimeOnly CloseTime
-        +Covers(time) bool
     }
     class MedicalService {
-        +string Name
         +ServiceCategory Category
         +TimeSpan Duration
         +decimal Price
-        +UpdatePricing(duration, price)
     }
     class AvailabilitySlot {
         +DateTime Start
         +DateTime End
-        +Contains(start, end) bool
         +Overlaps(other) bool
     }
     class Appointment {
         +DateTime StartTime
-        +DateTime EndTime
         +decimal Price
         +AppointmentStatus Status
         +Approve()
         +Reject(reason)
         +Cancel()
         +Complete()
-        +Overlaps(start, end) bool
     }
-
-    User <|-- Patient
-    User <|-- Doctor
-    User <|-- Admin
+    class TestResult {
+        +string Title
+        +string Findings
+    }
+    class Staff
+    class HealthcareProfessional
+    class Patient
 
     Institution "1" *-- "1..*" Branch
     Institution "1" *-- "*" MedicalService
     Branch "1" *-- "*" Department
     Branch "1" *-- "*" WorkingHours
-
-    Doctor "*" --> "1" Branch
-    Doctor "*" --> "0..1" Department
-    Doctor "*" -- "*" MedicalService : offers
-    Doctor "1" *-- "*" AvailabilitySlot
-
+    Staff "*" --> "1" Branch
+    HealthcareProfessional "*" -- "*" MedicalService : offers
+    HealthcareProfessional "1" *-- "*" AvailabilitySlot
     Appointment "*" --> "1" Patient
-    Appointment "*" --> "1" Doctor
+    Appointment "*" --> "1" HealthcareProfessional
     Appointment "*" --> "1" MedicalService
+    Appointment "1" -- "0..1" TestResult
 ```
 
 ### Architecture
@@ -160,6 +233,8 @@ flowchart LR
     DbContext --> DB[(PostgreSQL)]
 ```
 
+All user types are stored in a single `Users` table using Entity Framework's **Table-per-Hierarchy** mapping; a `UserType` column stores the concrete class, while `Role` stores the authorization group.
+
 ## Technologies
 
 - C# / ASP.NET Core MVC (.NET 8)
@@ -171,14 +246,14 @@ flowchart LR
 
 ```
 HospitalAppointmentSystem.Web/
-├── Models/         Domain classes and business rules
-├── Services/       Application logic (booking, conflict checking, management)
+├── Models/         Domain classes, interfaces, business rules and StaffFactory
+├── Services/       Application logic (booking, conflict checking, results, management)
 ├── Repositories/   Data access abstraction and EF Core implementation
 ├── Data/           AppDbContext and seed data
 ├── Migrations/     Database schema history
 ├── ViewModels/     Data shapes for forms and pages
 ├── Helpers/        Display helpers and model binders
-├── Controllers/    MVC controllers (Account, Patient, Doctor, Admin)
+├── Controllers/    Account, Patient, Professional, Secretary and Admin controllers
 └── Views/          Razor pages
 ```
 
@@ -206,7 +281,11 @@ HospitalAppointmentSystem.Web/
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@hospital.com | Admin123! |
-| Doctor | ebru.yazici@hospital.com | Doctor123! |
+| Doctor | ayse.yilmaz@hospital.com | Doctor123! |
 | Doctor | mehmet.kaya@hospital.com | Doctor123! |
 | Doctor | zeynep.demir@hospital.com | Doctor123! |
+| Nurse | elif.sahin@hospital.com | Staff123! |
+| Radiology Technician | burak.aydin@hospital.com | Staff123! |
+| Lab Technician | can.ozturk@hospital.com | Staff123! |
+| Secretary | selin.koc@hospital.com | Staff123! |
 | Patient | patient@test.com | Patient123! |
