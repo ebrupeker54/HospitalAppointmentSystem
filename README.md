@@ -6,17 +6,41 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 
 ## Screenshots
 
-| Home | Booking |
+### Welcome and Authentication
+
+| Home | Login |
 |---|---|
-| ![Home](docs/screenshots/home.png) | ![Booking](docs/screenshots/booking.png) |
+| ![Home](docs/screenshots/home.png) | ![Login](docs/screenshots/log-in.png) |
+
+| Sign Up |  |
+|---|---|
+| ![Sign Up](docs/screenshots/sign-up.png) |  |
+
+### Patient
+
+| Booking | Test Result |
+|---|---|
+| ![Booking](docs/screenshots/booking.png) | ![Test Result](docs/screenshots/result-panel.png) |
+
+### Doctor and Secretary
 
 | Doctor Panel | Secretary Panel |
 |---|---|
 | ![Doctor Panel](docs/screenshots/doctor-panel.png) | ![Secretary Panel](docs/screenshots/secretary-panel.png) |
 
-| Test Result | Admin Panel |
+| Phone Booking by Secretary |  |
 |---|---|
-| ![Test Result](docs/screenshots/test-result.png) | ![Admin Panel](docs/screenshots/admin-panel.png) |
+| ![Phone Booking](docs/screenshots/secretary-phone-appointment.png) |  |
+
+### Admin
+
+| Dashboard | Staff Management |
+|---|---|
+| ![Admin Dashboard](docs/screenshots/admin-panel.png) | ![Staff Management](docs/screenshots/admin-personel-panel.png) |
+
+| Medical Services |  |
+|---|---|
+| ![Medical Services](docs/screenshots/service-panel.png) |  |
 
 ## Features
 
