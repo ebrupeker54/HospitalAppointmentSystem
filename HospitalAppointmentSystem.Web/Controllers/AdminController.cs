@@ -152,65 +152,69 @@ public class AdminController : Controller
         Handle(() => _institutionService.UpdateService(id, name, category, durationMinutes, price),
             "Hizmet güncellendi.", RedirectToAction(nameof(Services)));
 
-    // ---------- Doctors ----------
+    // ---------- Staff ----------
 
-    public IActionResult Doctors()
+    public IActionResult Employees()
     {
-        var doctors = _context.Doctors
-            .Include(d => d.Branch).ThenInclude(b => b!.Institution)
-            .Include(d => d.Department)
-            .Include(d => d.Services)
-            .OrderBy(d => d.LastName)
+        var employees = _context.StaffMembers
+            .Include(s => s.Branch).ThenInclude(b => b!.Institution)
+            .Include(s => s.Department)
+            .OrderBy(s => s.LastName)
             .ToList();
 
-        return View(doctors);
+        _context.HealthcareProfessionals.Include(p => p.Services).Load();
+        _context.Secretaries.Include(s => s.Doctors).Load();
+
+        return View(employees);
     }
 
     [HttpGet]
-    public IActionResult CreateDoctor()
+    public IActionResult CreateEmployee()
     {
-        var model = new DoctorFormViewModel();
-        FillDoctorFormLists(model);
-        return View("DoctorForm", model);
+        var model = new StaffFormViewModel();
+        FillStaffFormLists(model);
+        return View("EmployeeForm", model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult CreateDoctor(DoctorFormViewModel model)
+    public IActionResult CreateEmployee(StaffFormViewModel model)
     {
         if (string.IsNullOrWhiteSpace(model.Password))
             ModelState.AddModelError(nameof(model.Password), "Şifre zorunludur.");
 
-        return SaveDoctor(model, () => _staffService.CreateDoctor(model), "Doktor kaydı oluşturuldu..");
+        return SaveEmployee(model, () => _staffService.CreateStaff(model), "Personel kaydı oluşturuldu.");
     }
 
     [HttpGet]
-    public IActionResult EditDoctor(int id)
+    public IActionResult EditEmployee(int id)
     {
-        var doctor = _context.Doctors.Include(d => d.Services).FirstOrDefault(d => d.Id == id);
-        if (doctor == null)
+        var staff = _staffService.LoadStaff(id);
+        if (staff == null)
             return NotFound();
 
-        var model = new DoctorFormViewModel
+        var model = new StaffFormViewModel
         {
-            Id = doctor.Id,
-            FirstName = doctor.FirstName,
-            LastName = doctor.LastName,
-            Email = doctor.Email,
-            PhoneNumber = doctor.PhoneNumber,
-            Specialty = doctor.Specialty,
-            BranchId = doctor.BranchId,
-            DepartmentId = doctor.DepartmentId,
-            ServiceIds = doctor.Services.Select(s => s.Id).ToList()
+            Id = staff.Id,
+            Type = StaffFactory.TypeOf(staff),
+            FirstName = staff.FirstName,
+            LastName = staff.LastName,
+            Email = staff.Email,
+            PhoneNumber = staff.PhoneNumber,
+            Specialty = (staff as Doctor)?.Specialty,
+            BranchId = staff.BranchId,
+            DepartmentId = staff.DepartmentId,
+            ServiceIds = (staff as HealthcareProfessional)?.Services.Select(s => s.Id).ToList() ?? new(),
+            DoctorIds = (staff as Secretary)?.Doctors.Select(d => d.Id).ToList() ?? new()
         };
-        FillDoctorFormLists(model);
-        return View("DoctorForm", model);
+        FillStaffFormLists(model);
+        return View("EmployeeForm", model);
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult EditDoctor(DoctorFormViewModel model) =>
-        SaveDoctor(model, () => _staffService.UpdateDoctor(model), "Doktor bilgileri güncellendi.");
+    public IActionResult EditEmployee(StaffFormViewModel model) =>
+        SaveEmployee(model, () => _staffService.UpdateStaff(model), "Personel bilgileri güncellendi.");
 
-    private IActionResult SaveDoctor(DoctorFormViewModel model, Action save, string successMessage)
+    private IActionResult SaveEmployee(StaffFormViewModel model, Action save, string successMessage)
     {
         if (ModelState.IsValid)
         {
@@ -218,7 +222,7 @@ public class AdminController : Controller
             {
                 save();
                 TempData["Success"] = successMessage;
-                return RedirectToAction(nameof(Doctors));
+                return RedirectToAction(nameof(Employees));
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or KeyNotFoundException)
             {
@@ -226,11 +230,11 @@ public class AdminController : Controller
             }
         }
 
-        FillDoctorFormLists(model);
-        return View("DoctorForm", model);
+        FillStaffFormLists(model);
+        return View("EmployeeForm", model);
     }
 
-    private void FillDoctorFormLists(DoctorFormViewModel model)
+    private void FillStaffFormLists(StaffFormViewModel model)
     {
         model.Branches = _context.Branches
             .Include(b => b.Institution)
@@ -238,8 +242,10 @@ public class AdminController : Controller
             .OrderBy(b => b.Institution!.Name).ThenBy(b => b.Name)
             .ToList();
         model.Services = _context.MedicalServices
-            .Include(s => s.Institution)
             .OrderBy(s => s.Name)
+            .ToList();
+        model.Doctors = _context.Doctors
+            .OrderBy(d => d.LastName)
             .ToList();
     }
 

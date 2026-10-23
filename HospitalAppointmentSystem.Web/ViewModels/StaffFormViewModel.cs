@@ -3,9 +3,12 @@ using HospitalAppointmentSystem.Web.Models;
 
 namespace HospitalAppointmentSystem.Web.ViewModels;
 
-public class DoctorFormViewModel
+public class StaffFormViewModel
 {
     public int? Id { get; set; }
+
+    [Display(Name = "Personel Türü")]
+    public StaffType Type { get; set; } = StaffType.Doctor;
 
     [Required(ErrorMessage = "Ad zorunludur.")]
     [Display(Name = "Ad")]
@@ -25,9 +28,8 @@ public class DoctorFormViewModel
     [Display(Name = "Telefon")]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Uzmanlık alanı zorunludur.")]
     [Display(Name = "Uzmanlık Alanı")]
-    public string Specialty { get; set; } = string.Empty;
+    public string? Specialty { get; set; }
 
     [MinLength(6, ErrorMessage = "Şifre en az 6 karakter olmalıdır.")]
     [DataType(DataType.Password)]
@@ -42,9 +44,11 @@ public class DoctorFormViewModel
     public int? DepartmentId { get; set; }
 
     public List<int> ServiceIds { get; set; } = new();
+    public List<int> DoctorIds { get; set; } = new();
 
     public List<Branch> Branches { get; set; } = new();
     public List<MedicalService> Services { get; set; } = new();
+    public List<Doctor> Doctors { get; set; } = new();
 
     public bool IsEdit => Id != null;
 }

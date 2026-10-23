@@ -7,6 +7,9 @@ public abstract class Staff : User
 
     public int? DepartmentId { get; set; }
     public Department? Department { get; set; }
+    public abstract string Title { get; }
+
+    public string DisplayName => $"{Title} {FullName}";
 
     public void AssignTo(Branch branch, Department? department)
     {

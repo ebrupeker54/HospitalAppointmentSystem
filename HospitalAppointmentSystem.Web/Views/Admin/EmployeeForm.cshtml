@@ -1,19 +1,20 @@
-﻿@model HospitalAppointmentSystem.Web.ViewModels.DoctorFormViewModel
+﻿@model HospitalAppointmentSystem.Web.ViewModels.StaffFormViewModel
+@using HospitalAppointmentSystem.Web.Models
 @{
-    ViewData["Title"] = Model.IsEdit ? "Doktoru Düzenle" : "Yeni Doktor";
+    ViewData["Title"] = Model.IsEdit ? "Personeli Düzenle" : "Yeni Personel";
 }
 
 <partial name="_AdminNav" />
 
 <div class="page-header">
     <div>
-        <h1>@(Model.IsEdit ? "Doktoru Düzenle" : "Yeni Doktor")</h1>
-        <p>@(Model.IsEdit ? "Doktorun bilgilerini ve atamalarını güncelleyin." : "Bir doktor hesabı oluşturun ve şubeye atayın.")</p>
+        <h1>@(Model.IsEdit ? "Personeli Düzenle" : "Yeni Personel")</h1>
+        <p>@(Model.IsEdit ? "Personelin bilgilerini ve görevlerini güncelleyin." : "Personel türünü seçin, bilgilerini girin ve görevlendirin.")</p>
     </div>
-    <a asp-action="Doctors" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Geri</a>
+    <a asp-action="Employees" class="btn btn-outline-brand"><i class="bi bi-arrow-left me-1"></i> Geri</a>
 </div>
 
-<form asp-action="@(Model.IsEdit ? "EditDoctor" : "CreateDoctor")" method="post">
+<form asp-action="@(Model.IsEdit ? "EditEmployee" : "CreateEmployee")" method="post">
     <input type="hidden" asp-for="Id" />
     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
@@ -23,6 +24,24 @@
                 <div class="panel-card-header"><i class="bi bi-person"></i> Kişisel Bilgiler</div>
                 <div class="p-4">
                     <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Type" class="form-label"></label>
+                            @if (Model.IsEdit)
+                            {
+                                <input type="hidden" asp-for="Type" />
+                                <input class="form-control" value="@Model.Type.ToDisplay()" disabled />
+                                <small class="text-muted">Personel türü sonradan değiştirilemez.</small>
+                            }
+                            else
+                            {
+                                <select asp-for="Type" class="form-select">
+                                    @foreach (var t in Enum.GetValues<StaffType>())
+                                    {
+                                        <option value="@t">@t.ToDisplay()</option>
+                                    }
+                                </select>
+                            }
+                        </div>
                         <div class="col-md-6">
                             <label asp-for="FirstName" class="form-label"></label>
                             <input asp-for="FirstName" class="form-control" />
@@ -43,10 +62,9 @@
                             <input asp-for="PhoneNumber" class="form-control" />
                             <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" id="specialtyGroup">
                             <label asp-for="Specialty" class="form-label"></label>
                             <input asp-for="Specialty" class="form-control" placeholder="Örn. Kardiyoloji" />
-                            <span asp-validation-for="Specialty" class="text-danger small"></span>
                         </div>
                         @if (!Model.IsEdit)
                         {
@@ -91,18 +109,33 @@
                         </select>
                     </div>
 
-                    <label class="form-label">Hizmetler</label>
-                    <p class="small text-muted mb-2" id="serviceHint">Kurumun hizmetlerini görmek için önce bir şube seçin.</p>
-                    @foreach (var s in Model.Services)
-                    {
-                        <div class="form-check service-option" data-institution="@s.InstitutionId">
-                            <input class="form-check-input" type="checkbox" name="ServiceIds" value="@s.Id"
-                                   id="svc-@s.Id" checked="@Model.ServiceIds.Contains(s.Id)" />
-                            <label class="form-check-label" for="svc-@s.Id">
-                                @s.Name <small class="text-muted">(@s.Duration.TotalMinutes dk, @s.Price.ToString("N2") TL)</small>
-                            </label>
-                        </div>
-                    }
+                    <div id="servicesGroup">
+                        <label class="form-label">Verdiği Hizmetler</label>
+                        <p class="small text-muted mb-2 branch-hint">Hizmetleri görmek için önce bir şube seçin.</p>
+                        @foreach (var s in Model.Services)
+                        {
+                            <div class="form-check service-option" data-institution="@s.InstitutionId">
+                                <input class="form-check-input" type="checkbox" name="ServiceIds" value="@s.Id"
+                                       id="svc-@s.Id" checked="@Model.ServiceIds.Contains(s.Id)" />
+                                <label class="form-check-label" for="svc-@s.Id">
+                                    @s.Name <small class="text-muted">(@s.Category.ToDisplay())</small>
+                                </label>
+                            </div>
+                        }
+                    </div>
+
+                    <div id="doctorsGroup">
+                        <label class="form-label">Bağlı Olduğu Doktorlar</label>
+                        <p class="small text-muted mb-2 branch-hint">Doktorları görmek için önce bir şube seçin.</p>
+                        @foreach (var d in Model.Doctors)
+                        {
+                            <div class="form-check doctor-option" data-branch="@d.BranchId">
+                                <input class="form-check-input" type="checkbox" name="DoctorIds" value="@d.Id"
+                                       id="doc-@d.Id" checked="@Model.DoctorIds.Contains(d.Id)" />
+                                <label class="form-check-label" for="doc-@d.Id">@d.DisplayName <small class="text-muted">(@d.Specialty)</small></label>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -110,7 +143,7 @@
 
     <div class="mt-4">
         <button type="submit" class="btn btn-brand px-4">
-            <i class="bi bi-save me-1"></i>@(Model.IsEdit ? "Değişiklikleri Kaydet" : "Doktoru Oluştur")
+            <i class="bi bi-save me-1"></i>@(Model.IsEdit ? "Değişiklikleri Kaydet" : "Personeli Oluştur")
         </button>
     </div>
 </form>
@@ -119,14 +152,20 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         (function () {
+            const type = document.getElementById('Type');
             const branch = document.getElementById('BranchId');
             const department = document.getElementById('DepartmentId');
-            const hint = document.getElementById('serviceHint');
 
             function refresh() {
-                const selected = branch.options[branch.selectedIndex];
+                const selectedType = type.value;
+                const isSecretary = selectedType === 'Secretary';
+                document.getElementById('specialtyGroup').classList.toggle('d-none', selectedType !== 'Doctor');
+                document.getElementById('servicesGroup').classList.toggle('d-none', isSecretary);
+                document.getElementById('doctorsGroup').classList.toggle('d-none', !isSecretary);
+
+                const selectedBranch = branch.options[branch.selectedIndex];
                 const branchId = branch.value;
-                const institutionId = selected ? selected.dataset.institution : undefined;
+                const institutionId = selectedBranch ? selectedBranch.dataset.institution : undefined;
 
                 department.querySelectorAll('option[data-branch]').forEach(function (option) {
                     const visible = option.dataset.branch === branchId;
@@ -135,14 +174,23 @@
                 });
 
                 document.querySelectorAll('.service-option').forEach(function (item) {
-                    const visible = item.dataset.institution === institutionId;
+                    const visible = !isSecretary && item.dataset.institution === institutionId;
                     item.classList.toggle('d-none', !visible);
                     if (!visible) item.querySelector('input').checked = false;
                 });
 
-                hint.classList.toggle('d-none', !!branchId);
+                document.querySelectorAll('.doctor-option').forEach(function (item) {
+                    const visible = isSecretary && item.dataset.branch === branchId;
+                    item.classList.toggle('d-none', !visible);
+                    if (!visible) item.querySelector('input').checked = false;
+                });
+
+                document.querySelectorAll('.branch-hint').forEach(function (hint) {
+                    hint.classList.toggle('d-none', !!branchId);
+                });
             }
 
+            type.addEventListener('change', refresh);
             branch.addEventListener('change', refresh);
             refresh();
         })();

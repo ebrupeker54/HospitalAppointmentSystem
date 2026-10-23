@@ -1,0 +1,78 @@
+﻿@model List<HospitalAppointmentSystem.Web.Models.Staff>
+@using HospitalAppointmentSystem.Web.Models
+@{
+    ViewData["Title"] = "Personel";
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>Personel</h1>
+        <p>Doktor, sağlık personeli ve sekreterleri kaydedin; şube ve görev atamalarını yapın.</p>
+    </div>
+    <a asp-action="CreateEmployee" class="btn btn-brand"><i class="bi bi-person-plus me-1"></i> Yeni Personel</a>
+</div>
+
+<div class="panel-card">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-person-badge"></i>
+            <p class="mb-0">Henüz kayıtlı personel yok.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr><th>Personel</th><th>Tür</th><th>Şube</th><th>Bölüm</th><th>Görev</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="avatar">@(s.FirstName.Length > 0 ? s.FirstName[0] : ' ')@(s.LastName.Length > 0 ? s.LastName[0] : ' ')</span>
+                                    <div>
+                                        <div class="cell-main">@s.DisplayName</div>
+                                        <small class="text-muted">@s.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge service-badge">@StaffFactory.TypeOf(s).ToDisplay()</span></td>
+                            <td>
+                                <div>@s.Branch?.Name</div>
+                                <small class="text-muted">@s.Branch?.Institution?.Name</small>
+                            </td>
+                            <td>@(s.Department?.Name ?? "-")</td>
+                            <td>
+                                @if (s is HealthcareProfessional p)
+                                {
+                                    @foreach (var service in p.Services)
+                                    {
+                                        <span class="badge service-badge">@service.Name</span>
+                                    }
+                                }
+                                else if (s is Secretary sec)
+                                {
+                                    @foreach (var d in sec.Doctors)
+                                    {
+                                        <span class="badge service-badge"><i class="bi bi-person me-1"></i>@d.DisplayName</span>
+                                    }
+                                }
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="EditEmployee" asp-route-id="@s.Id" class="btn btn-sm btn-light">
+                                    <i class="bi bi-pencil me-1"></i>Düzenle
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

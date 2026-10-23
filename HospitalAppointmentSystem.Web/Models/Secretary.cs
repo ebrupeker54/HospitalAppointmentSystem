@@ -10,7 +10,16 @@ public class Secretary : Staff, IAppointmentManager
     }
 
     public override string DashboardController => "Secretary";
+    public override string Title => "Sekreter";
 
+    public void SetDoctors(IEnumerable<Doctor> doctors)
+    {
+        foreach (var existing in Doctors.ToList())
+            UnassignDoctor(existing);
+
+        foreach (var doctor in doctors)
+            AssignDoctor(doctor);
+    }
     public bool CanManage(int professionalId) => Doctors.Any(d => d.Id == professionalId);
 
     public void AssignDoctor(Doctor doctor)

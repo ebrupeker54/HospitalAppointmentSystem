@@ -5,9 +5,6 @@ public abstract class HealthcareProfessional : Staff, IAppointmentManager
     public List<MedicalService> Services { get; private set; } = new();
     public List<AvailabilitySlot> Availability { get; private set; } = new();
 
-    public abstract string Title { get; }
-
-    public string DisplayName => $"{Title} {FullName}";
 
     public override string DashboardController => "Professional";
 

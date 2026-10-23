@@ -44,6 +44,15 @@ public static class DisplayExtensions
         _ => type.ToString()
     };
 
+    public static string ToDisplay(this StaffType type) => type switch
+    {
+        StaffType.Doctor => "Doktor",
+        StaffType.Nurse => "Hemşire",
+        StaffType.RadiologyTechnician => "Radyoloji Teknikeri",
+        StaffType.LabTechnician => "Laborant",
+        StaffType.Secretary => "Sekreter",
+        _ => type.ToString()
+    };
     public static string ToDisplay(this DayOfWeek day) => Turkish.DateTimeFormat.GetDayName(day);
 
     public static string RoleDisplay(string? role) =>

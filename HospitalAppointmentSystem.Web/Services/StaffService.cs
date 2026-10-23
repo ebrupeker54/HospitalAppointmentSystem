@@ -14,72 +14,101 @@ public class StaffService
         _context = context;
     }
 
-    public void CreateDoctor(DoctorFormViewModel form)
+    public void CreateStaff(StaffFormViewModel form)
     {
         var email = NormalizeEmail(form.Email);
         if (_context.Users.Any(u => u.Email == email))
-            throw new InvalidOperationException("An account with this email already exists.");
+            throw new InvalidOperationException("Bu e-posta adresiyle kayıtlı bir hesap zaten var.");
 
-        var doctor = new Doctor
-        {
-            FirstName = form.FirstName.Trim(),
-            LastName = form.LastName.Trim(),
-            Email = email,
-            PhoneNumber = form.PhoneNumber.Trim(),
-            Specialty = form.Specialty.Trim()
-        };
-        doctor.SetPassword(form.Password ?? string.Empty);
+        var staff = StaffFactory.Create(form.Type);
+        SetBasicInfo(staff, form, email);
+        staff.SetPassword(form.Password ?? string.Empty);
 
-        ApplyAssignments(doctor, form);
+        ApplyAssignments(staff, form);
 
-        _context.Doctors.Add(doctor);
+        _context.Users.Add(staff);
         _context.SaveChanges();
     }
 
-    public void UpdateDoctor(DoctorFormViewModel form)
+    public void UpdateStaff(StaffFormViewModel form)
     {
-        var doctor = _context.Doctors
-            .Include(d => d.Services)
-            .FirstOrDefault(d => d.Id == form.Id)
-            ?? throw new KeyNotFoundException("Doctor not found.");
+        var staff = LoadStaff(form.Id ?? 0)
+            ?? throw new KeyNotFoundException("Personel bulunamadı.");
 
         var email = NormalizeEmail(form.Email);
-        if (_context.Users.Any(u => u.Id != doctor.Id && u.Email == email))
-            throw new InvalidOperationException("An account with this email already exists.");
+        if (_context.Users.Any(u => u.Id != staff.Id && u.Email == email))
+            throw new InvalidOperationException("Bu e-posta adresiyle kayıtlı bir hesap zaten var.");
 
-        doctor.FirstName = form.FirstName.Trim();
-        doctor.LastName = form.LastName.Trim();
-        doctor.Email = email;
-        doctor.PhoneNumber = form.PhoneNumber.Trim();
-        doctor.Specialty = form.Specialty.Trim();
-
-        ApplyAssignments(doctor, form);
+        SetBasicInfo(staff, form, email);
+        ApplyAssignments(staff, form);
         _context.SaveChanges();
     }
 
-    private void ApplyAssignments(Doctor doctor, DoctorFormViewModel form)
+    public Staff? LoadStaff(int id)
+    {
+        var staff = _context.Users.Find(id) as Staff;
+
+        if (staff is HealthcareProfessional)
+            _context.HealthcareProfessionals.Include(p => p.Services).Where(p => p.Id == id).Load();
+        else if (staff is Secretary)
+            _context.Secretaries.Include(s => s.Doctors).Where(s => s.Id == id).Load();
+
+        return staff;
+    }
+
+    private static void SetBasicInfo(Staff staff, StaffFormViewModel form, string email)
+    {
+        staff.FirstName = form.FirstName.Trim();
+        staff.LastName = form.LastName.Trim();
+        staff.Email = email;
+        staff.PhoneNumber = form.PhoneNumber.Trim();
+    }
+
+    private void ApplyAssignments(Staff staff, StaffFormViewModel form)
     {
         var branch = _context.Branches
             .Include(b => b.Institution)
             .Include(b => b.Departments)
             .FirstOrDefault(b => b.Id == form.BranchId)
-            ?? throw new ArgumentException("Please select a branch.");
+            ?? throw new ArgumentException("Lütfen bir şube seçin.");
 
         var department = form.DepartmentId == null
             ? null
             : branch.Departments.FirstOrDefault(d => d.Id == form.DepartmentId)
-              ?? throw new InvalidOperationException("The selected department does not belong to the selected branch.");
+              ?? throw new InvalidOperationException("Seçilen bölüm, seçilen şubeye ait değil.");
 
-        var requestedIds = form.ServiceIds.Distinct().ToList();
-        var services = _context.MedicalServices
-            .Where(s => requestedIds.Contains(s.Id) && s.InstitutionId == branch.InstitutionId)
-            .ToList();
+        staff.AssignTo(branch, department);
 
-        if (services.Count != requestedIds.Count)
-            throw new InvalidOperationException("Doctors can only offer services of their branch's institution.");
+        if (staff is Doctor doctor)
+        {
+            if (string.IsNullOrWhiteSpace(form.Specialty))
+                throw new ArgumentException("Doktorlar için uzmanlık alanı zorunludur.");
+            doctor.Specialty = form.Specialty.Trim();
+        }
 
-        doctor.AssignTo(branch, department);
-        doctor.SetServices(services);
+        if (staff is HealthcareProfessional professional)
+        {
+            var serviceIds = form.ServiceIds.Distinct().ToList();
+            var services = _context.MedicalServices
+                .Where(s => serviceIds.Contains(s.Id) && s.InstitutionId == branch.InstitutionId)
+                .ToList();
+
+            if (services.Count != serviceIds.Count)
+                throw new InvalidOperationException("Personel yalnızca şubesinin bağlı olduğu kurumun hizmetlerini verebilir.");
+
+            professional.SetServices(services);
+        }
+
+        if (staff is Secretary secretary)
+        {
+            var doctorIds = form.DoctorIds.Distinct().ToList();
+            var doctors = _context.Doctors
+                .Include(d => d.Branch)
+                .Where(d => doctorIds.Contains(d.Id))
+                .ToList();
+
+            secretary.SetDoctors(doctors);
+        }
     }
 
     private static string NormalizeEmail(string email) => email.Trim().ToLowerInvariant();
