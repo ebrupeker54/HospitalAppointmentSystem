@@ -1,0 +1,85 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.AdminAppointmentsViewModel
+@using HospitalAppointmentSystem.Web.Models
+@{
+    ViewData["Title"] = "Randevular";
+    var patientId = Model.Patient?.Id;
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>Randevular</h1>
+        <p>
+            @if (Model.Patient != null)
+            {
+                <span>@Model.Patient.FullName adlı hastanın randevuları &middot; <a asp-action="Appointments" asp-route-status="@Model.Status">Tüm hastaları göster</a></span>
+            }
+            else
+            {
+                <span>Tüm şubelerdeki randevular.</span>
+            }
+        </p>
+    </div>
+</div>
+
+<ul class="nav admin-nav mb-4">
+    <li class="nav-item">
+        <a class="nav-link @(Model.Status == null ? "active" : "")" asp-action="Appointments" asp-route-patientId="@patientId">Tümü</a>
+    </li>
+    @foreach (var s in Enum.GetValues<AppointmentStatus>())
+    {
+        <li class="nav-item">
+            <a class="nav-link @(Model.Status == s ? "active" : "")" asp-action="Appointments"
+               asp-route-status="@s" asp-route-patientId="@patientId">@s.ToDisplay()</a>
+        </li>
+    }
+</ul>
+
+<div class="panel-card">
+    @if (!Model.Appointments.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p class="mb-0">Bu filtreye uygun randevu bulunmuyor.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr><th>Tarih</th><th>Hasta</th><th>Personel</th><th>Hizmet</th><th>Ücret</th><th>Durum</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var a in Model.Appointments)
+                    {
+                        <tr>
+                            <td>
+                                <div class="cell-main">@a.StartTime.ToString("dd MMM yyyy")</div>
+                                <small class="text-muted">@a.StartTime.ToString("HH:mm") - @a.EndTime.ToString("HH:mm")</small>
+                            </td>
+                            <td>
+                                <div class="cell-main">@a.Patient?.FullName</div>
+                                <small class="text-muted"><i class="bi bi-telephone me-1"></i>@a.Patient?.PhoneNumber</small>
+                            </td>
+                            <td>
+                                <div>@a.Professional?.DisplayName</div>
+                                <small class="text-muted">@a.Professional?.Branch?.Name</small>
+                            </td>
+                            <td>@a.MedicalService?.Name</td>
+                            <td>@a.Price.ToString("N2") TL</td>
+                            <td>
+                                <span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span>
+                                @if (a.Status == AppointmentStatus.Rejected && !string.IsNullOrEmpty(a.RejectionReason))
+                                {
+                                    <div class="small text-muted mt-1">@a.RejectionReason</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

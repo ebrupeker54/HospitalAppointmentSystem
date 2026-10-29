@@ -154,6 +154,47 @@ public class AdminController : Controller
         Handle(() => _institutionService.UpdateService(id, name, category, durationMinutes, price),
             "Hizmet güncellendi.", RedirectToAction(nameof(Services)));
 
+    // ---------- Patients and appointments ----------
+
+    public IActionResult Patients()
+    {
+        var model = new AdminPatientsViewModel
+        {
+            Patients = _context.Patients
+                .OrderBy(p => p.LastName).ThenBy(p => p.FirstName)
+                .ToList(),
+            AppointmentCounts = _context.Appointments
+                .GroupBy(a => a.PatientId)
+                .Select(g => new { PatientId = g.Key, Count = g.Count() })
+                .ToDictionary(x => x.PatientId, x => x.Count)
+        };
+
+        return View(model);
+    }
+
+    public IActionResult Appointments(AppointmentStatus? status, int? patientId)
+    {
+        var query = _context.Appointments
+            .Include(a => a.Patient)
+            .Include(a => a.Professional).ThenInclude(p => p!.Branch)
+            .Include(a => a.MedicalService)
+            .AsQueryable();
+
+        if (status != null)
+            query = query.Where(a => a.Status == status);
+        if (patientId != null)
+            query = query.Where(a => a.PatientId == patientId);
+
+        var model = new AdminAppointmentsViewModel
+        {
+            Status = status,
+            Patient = patientId == null ? null : _context.Patients.Find(patientId),
+            Appointments = query.OrderBy(a => a.StartTime).ToList()
+        };
+
+        return View(model);
+    }
+
     // ---------- Staff ----------
 
     public IActionResult Employees()

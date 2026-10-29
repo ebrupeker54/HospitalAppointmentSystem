@@ -1,0 +1,62 @@
+﻿@model HospitalAppointmentSystem.Web.ViewModels.AdminPatientsViewModel
+@{
+    ViewData["Title"] = "Hastalar";
+}
+
+<partial name="_AdminNav" />
+
+<div class="page-header">
+    <div>
+        <h1>Hastalar</h1>
+        <p>Sisteme kayıtlı hastalar ve randevu sayıları.</p>
+    </div>
+</div>
+
+<div class="panel-card">
+    @if (!Model.Patients.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-people"></i>
+            <p class="mb-0">Henüz kayıtlı hasta yok.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-modern align-middle">
+                <thead>
+                    <tr><th>Hasta</th><th>T.C. Kimlik No</th><th>Telefon</th><th>Doğum Tarihi</th><th>Randevu</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model.Patients)
+                    {
+                        var count = Model.AppointmentCounts.GetValueOrDefault(p.Id);
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="avatar">@(p.FirstName.Length > 0 ? p.FirstName[0] : ' ')@(p.LastName.Length > 0 ? p.LastName[0] : ' ')</span>
+                                    <div>
+                                        <div class="cell-main">@p.FullName</div>
+                                        <small class="text-muted">@p.Email</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@(p.NationalId.Length == 11 ? "*******" + p.NationalId[^4..] : p.NationalId)</td>
+                            <td>@p.PhoneNumber</td>
+                            <td>@p.DateOfBirth.ToString("dd.MM.yyyy")</td>
+                            <td>@count</td>
+                            <td class="text-end">
+                                @if (count > 0)
+                                {
+                                    <a asp-action="Appointments" asp-route-patientId="@p.Id" class="btn btn-sm btn-light">
+                                        <i class="bi bi-calendar-check me-1"></i>Randevuları
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
