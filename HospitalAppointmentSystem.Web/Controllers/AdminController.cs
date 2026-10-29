@@ -36,7 +36,7 @@ public class AdminController : Controller
             BranchCount = _context.Branches.Count(),
             StaffCount = _context.StaffMembers.Count(),
             PatientCount = _context.Patients.Count(),
-            PendingAppointmentCount = _context.Appointments.Count(a => a.Status == AppointmentStatus.Pending),
+            PendingAppointmentCount = _context.Appointments.Count(a => a.Status == AppointmentStatus.Pending && a.StartTime > DateTime.Now),
             Staff = _context.StaffMembers
                 .Include(s => s.Branch)
                 .OrderBy(s => s.LastName)
@@ -180,7 +180,11 @@ public class AdminController : Controller
             .Include(a => a.MedicalService)
             .AsQueryable();
 
-        if (status != null)
+        if (status == AppointmentStatus.Expired)
+            query = query.Where(a => a.Status == AppointmentStatus.Pending && a.StartTime <= DateTime.Now);
+        else if (status == AppointmentStatus.Pending)
+            query = query.Where(a => a.Status == AppointmentStatus.Pending && a.StartTime > DateTime.Now);
+        else if (status != null)
             query = query.Where(a => a.Status == status);
         if (patientId != null)
             query = query.Where(a => a.PatientId == patientId);

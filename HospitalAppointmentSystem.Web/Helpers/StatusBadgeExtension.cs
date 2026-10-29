@@ -11,6 +11,7 @@ public static class StatusBadgeExtensions
         AppointmentStatus.Rejected => "bg-danger",
         AppointmentStatus.Cancelled => "bg-secondary",
         AppointmentStatus.Completed => "bg-primary",
+        AppointmentStatus.Expired => "bg-light text-muted border",
         _ => "bg-light text-dark"
     };
 }

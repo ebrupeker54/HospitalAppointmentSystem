@@ -3,8 +3,8 @@
 @{
     ViewData["Title"] = "Randevularım";
     var upcoming = Model.Count(a => a.IsActive && a.StartTime > DateTime.Now);
-    var pending = Model.Count(a => a.Status == AppointmentStatus.Pending);
-    var completed = Model.Count(a => a.Status == AppointmentStatus.Completed);
+    var pending = Model.Count(a => a.CurrentStatus == AppointmentStatus.Pending);
+    var completed = Model.Count(a => a.CurrentStatus == AppointmentStatus.Completed);
 }
 
 <div class="page-header">
@@ -73,7 +73,7 @@
                             </td>
                             <td>@a.Price.ToString("N2") TL</td>
                             <td>
-                                <span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span>
+                                <span class="badge @a.CurrentStatus.ToBadgeClass()">@a.Status.ToDisplay()</span>
                                 @if (a.Status == AppointmentStatus.Rejected && !string.IsNullOrEmpty(a.RejectionReason))
                                 {
                                     <div class="small text-muted mt-1">@a.RejectionReason</div>

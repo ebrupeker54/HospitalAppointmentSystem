@@ -2,7 +2,7 @@
 @using HospitalAppointmentSystem.Web.Models
 @{
     ViewData["Title"] = "Çalışma Panelim";
-    var pending = Model.Appointments.Count(a => a.Status == AppointmentStatus.Pending);
+    var pending = Model.Appointments.Count(a => a.CurrentStatus == AppointmentStatus.Pending);
     var today = Model.Appointments.Count(a => a.IsActive && a.StartTime.Date == DateTime.Today);
 }
 
@@ -62,9 +62,9 @@
                                     </td>
                                     <td>@a.Patient?.FullName</td>
                                     <td>@a.MedicalService?.Name</td>
-                                    <td><span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span></td>
+                                    <td><span class="badge @a.CurrentStatus.ToBadgeClass()">@a.Status.ToDisplay()</span></td>
                                     <td class="text-end">
-                                        @if (a.Status == AppointmentStatus.Pending)
+                                        @if (a.CurrentStatus == AppointmentStatus.Pending)
                                         {
                                             <div class="d-flex gap-2 justify-content-end">
                                                 <form asp-action="Approve" asp-route-id="@a.Id" method="post">

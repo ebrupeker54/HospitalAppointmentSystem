@@ -70,7 +70,7 @@
                             <td>@a.MedicalService?.Name</td>
                             <td>@a.Price.ToString("N2") TL</td>
                             <td>
-                                <span class="badge @a.Status.ToBadgeClass()">@a.Status.ToDisplay()</span>
+                                <span class="badge @a.CurrentStatus.ToBadgeClass()">@a.CurrentStatus.ToDisplay()</span>
                                 @if (a.Status == AppointmentStatus.Rejected && !string.IsNullOrEmpty(a.RejectionReason))
                                 {
                                     <div class="small text-muted mt-1">@a.RejectionReason</div>

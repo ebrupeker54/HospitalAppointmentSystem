@@ -14,6 +14,7 @@ public static class DisplayExtensions
         AppointmentStatus.Rejected => "Reddedildi",
         AppointmentStatus.Cancelled => "İptal Edildi",
         AppointmentStatus.Completed => "Tamamlandı",
+        AppointmentStatus.Expired => "Süresi Geçti",
         _ => status.ToString()
     };
 

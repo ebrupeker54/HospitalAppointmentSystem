@@ -23,7 +23,9 @@ public class Appointment
     public TestResult? Result { get; private set; }
     public TimeSpan Duration => EndTime - StartTime;
     public bool IsActive => Status == AppointmentStatus.Pending || Status == AppointmentStatus.Approved;
+    public bool IsExpired => Status == AppointmentStatus.Pending && StartTime <= DateTime.Now;
 
+    public AppointmentStatus CurrentStatus => IsExpired ? AppointmentStatus.Expired : Status;
     // Required by Entity Framework Core
     private Appointment() { }
 
@@ -53,12 +55,15 @@ public class Appointment
 
     public void Approve()
     {
+        EnsureNotExpired();
         EnsureStatus(AppointmentStatus.Pending, "Yalnızca onay bekleyen randevular onaylanabilir.");
         Status = AppointmentStatus.Approved;
     }
 
     public void Reject(string reason)
     {
+        EnsureNotExpired();
+
         if (string.IsNullOrWhiteSpace(reason))
             throw new ArgumentException("Ret gerekçesi zorunludur.");
 
@@ -88,5 +93,11 @@ public class Appointment
     {
         if (Status != expected)
             throw new InvalidOperationException(errorMessage);
+    }
+
+    private void EnsureNotExpired()
+    {
+        if (IsExpired)
+            throw new InvalidOperationException("Randevu saati geçtiği için bu talep artık işleme alınamaz.");
     }
 }
