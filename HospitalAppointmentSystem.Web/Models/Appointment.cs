@@ -21,6 +21,12 @@ public class Appointment
     public string? RejectionReason { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public TestResult? Result { get; private set; }
+    public Payment? Payment { get; private set; }
+
+    public bool CanBePaid =>
+        Payment == null
+        && StartTime > DateTime.Now
+        && (Status == AppointmentStatus.Pending || Status == AppointmentStatus.Approved);
     public TimeSpan Duration => EndTime - StartTime;
     public bool IsActive => Status == AppointmentStatus.Pending || Status == AppointmentStatus.Approved;
     public bool IsExpired => Status == AppointmentStatus.Pending && StartTime <= DateTime.Now;

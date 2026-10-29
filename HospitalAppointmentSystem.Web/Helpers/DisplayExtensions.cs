@@ -55,6 +55,12 @@ public static class DisplayExtensions
         _ => type.ToString()
     };
     public static string ToDisplay(this DayOfWeek day) => Turkish.DateTimeFormat.GetDayName(day);
+    public static string ToDisplay(this PaymentStatus status) => status switch
+    {
+        PaymentStatus.Paid => "Ödendi (Demo)",
+        PaymentStatus.Refunded => "İade Edildi",
+        _ => status.ToString()
+    };
 
     public static string RoleDisplay(string? role) =>
         Enum.TryParse<UserRole>(role, out var parsed) ? parsed.ToDisplay() : role ?? string.Empty;

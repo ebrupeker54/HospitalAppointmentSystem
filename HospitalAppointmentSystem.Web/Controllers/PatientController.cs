@@ -14,11 +14,13 @@ public class PatientController : Controller
 {
     private readonly AppDbContext _context;
     private readonly AppointmentService _appointmentService;
+    private readonly PaymentService _paymentService;
 
-    public PatientController(AppDbContext context, AppointmentService appointmentService)
+    public PatientController(AppDbContext context, AppointmentService appointmentService, PaymentService paymentService)
     {
         _context = context;
         _appointmentService = appointmentService;
+        _paymentService = paymentService;
     }
 
     private int CurrentPatientId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -29,6 +31,7 @@ public class PatientController : Controller
             .Include(a => a.Professional).ThenInclude(p => p!.Branch)
             .Include(a => a.MedicalService)
             .Include(a => a.Result)
+            .Include(a => a.Payment)
             .Where(a => a.PatientId == CurrentPatientId)
             .OrderByDescending(a => a.StartTime)
             .ToList();
@@ -110,7 +113,23 @@ public class PatientController : Controller
         try
         {
             _appointmentService.CancelByPatient(id, CurrentPatientId);
-            TempData["Success"] = "Randevunuz iptal edildi.";
+            TempData["Success"] = "Randevunuz iptal edildi. Ödeme yaptıysanız iade edildi.";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
+        {
+            TempData["Error"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public IActionResult Pay(int id)
+    {
+        try
+        {
+            var payment = _paymentService.PayForAppointment(id, CurrentPatientId);
+            TempData["Success"] = $"Ödemeniz alındı (demo): {payment.Amount:N2} TL · İşlem no: {payment.TransactionReference}";
         }
         catch (Exception ex) when (ex is InvalidOperationException or KeyNotFoundException)
         {

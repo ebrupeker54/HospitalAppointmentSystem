@@ -19,6 +19,7 @@ public class EfAppointmentRepository : IAppointmentRepository
             .Include(a => a.Patient)
             .Include(a => a.Professional)
             .Include(a => a.MedicalService)
+            .Include(a => a.Payment)
             .FirstOrDefault(a => a.Id == id);
     }
 

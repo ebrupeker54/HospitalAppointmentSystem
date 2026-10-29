@@ -23,6 +23,8 @@ builder.Services.AddScoped<AvailabilityService>();
 builder.Services.AddScoped<InstitutionService>();
 builder.Services.AddScoped<StaffService>();
 builder.Services.AddScoped<ResultService>();
+builder.Services.AddScoped<IPaymentProvider, DemoPaymentProvider>();
+builder.Services.AddScoped<PaymentService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

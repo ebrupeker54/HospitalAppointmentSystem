@@ -229,6 +229,50 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.ToTable("MedicalServices");
                 });
 
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Payment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)");
+
+                    b.Property<int>("AppointmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("PaidAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RefundReference")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TransactionReference")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
+
+                    b.ToTable("Payments");
+                });
+
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.TestResult", b =>
                 {
                     b.Property<int>("Id")
@@ -531,6 +575,17 @@ namespace HospitalAppointmentSystem.Web.Migrations
                     b.Navigation("Institution");
                 });
 
+            modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Payment", b =>
+                {
+                    b.HasOne("HospitalAppointmentSystem.Web.Models.Appointment", "Appointment")
+                        .WithOne("Payment")
+                        .HasForeignKey("HospitalAppointmentSystem.Web.Models.Payment", "AppointmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Appointment");
+                });
+
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.TestResult", b =>
                 {
                     b.HasOne("HospitalAppointmentSystem.Web.Models.Appointment", "Appointment")
@@ -576,6 +631,8 @@ namespace HospitalAppointmentSystem.Web.Migrations
 
             modelBuilder.Entity("HospitalAppointmentSystem.Web.Models.Appointment", b =>
                 {
+                    b.Navigation("Payment");
+
                     b.Navigation("Result");
                 });
 

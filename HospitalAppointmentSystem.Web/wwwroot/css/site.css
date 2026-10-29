@@ -554,3 +554,104 @@ a {
     .stat-link:hover {
         color: inherit;
     }
+
+/* ---------- Payment card ---------- */
+.credit-card {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 340px;
+    aspect-ratio: 1.586;
+    margin: 0 auto;
+}
+
+.card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform .6s ease;
+    transform-style: preserve-3d;
+}
+
+.credit-card.flipped .card-inner {
+    transform: rotateY(180deg);
+}
+
+.card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    color: #fff;
+    background: linear-gradient(135deg, #0f766e 0%, #0d9488 50%, #0ea5e9 100%);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, .25);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+}
+
+.card-front {
+    padding: 1.3rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-back {
+    transform: rotateY(180deg);
+    padding-top: 1.3rem;
+}
+
+.card-chip {
+    width: 44px;
+    height: 34px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fde68a, #d97706);
+}
+
+.card-brand {
+    font-weight: 800;
+    font-style: italic;
+    font-size: 1.1rem;
+    letter-spacing: .05em;
+}
+
+.card-number-display {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    letter-spacing: .1em;
+    white-space: nowrap;
+}
+
+.card-label {
+    font-size: .65rem;
+    opacity: .85;
+    letter-spacing: .08em;
+}
+
+.card-value {
+    font-size: .95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.card-stripe {
+    height: 44px;
+    background: #0f172a;
+}
+
+.card-signature {
+    margin: 1.2rem 1.4rem .4rem;
+    padding: .5rem .8rem;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #0f172a;
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    letter-spacing: .2em;
+}
+
+.card-cvv-label {
+    padding: 0 1.4rem;
+    text-align: right;
+}

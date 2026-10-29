@@ -6,10 +6,12 @@ namespace HospitalAppointmentSystem.Web.Services;
 public class AppointmentService
 {
     private readonly IAppointmentRepository _repository;
+    private readonly IPaymentProvider _paymentProvider;
 
-    public AppointmentService(IAppointmentRepository repository)
+    public AppointmentService(IAppointmentRepository repository, IPaymentProvider paymentProvider)
     {
         _repository = repository;
+        _paymentProvider = paymentProvider;
     }
 
     public List<DateTime> GetAvailableStartTimes(HealthcareProfessional professional, MedicalService service, DateTime date)
@@ -68,6 +70,7 @@ public class AppointmentService
             throw new InvalidOperationException("Yalnızca kendi randevularınızı iptal edebilirsiniz.");
 
         appointment.Cancel();
+        RefundIfPaid(appointment);
         _repository.Update(appointment);
     }
 
@@ -82,6 +85,7 @@ public class AppointmentService
     {
         var appointment = GetManagedOrThrow(appointmentId, manager);
         appointment.Reject(reason);
+        RefundIfPaid(appointment);
         _repository.Update(appointment);
     }
 
@@ -101,6 +105,18 @@ public class AppointmentService
         if (!manager.CanManage(appointment.ProfessionalId))
             throw new InvalidOperationException("Bu randevuyu yönetme yetkiniz yok.");
         return appointment;
+    }
+
+    private void RefundIfPaid(Appointment appointment)
+    {
+        if (appointment.Payment?.Status != PaymentStatus.Paid)
+            return;
+
+        var result = _paymentProvider.Refund(appointment.Payment.TransactionReference, appointment.Payment.Amount);
+        if (!result.Succeeded)
+            throw new InvalidOperationException(result.ErrorMessage ?? "Ödeme iadesi yapılamadı.");
+
+        appointment.Payment.MarkRefunded(result.Reference);
     }
 
     private Appointment GetOrThrow(int appointmentId)

@@ -23,7 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<AvailabilitySlot> AvailabilitySlots => Set<AvailabilitySlot>();
     public DbSet<Appointment> Appointments => Set<Appointment>();
     public DbSet<TestResult> TestResults => Set<TestResult>();
-
+    public DbSet<Payment> Payments => Set<Payment>();
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         // Store all dates as local clinic time (no time zone conversion)
@@ -95,5 +95,15 @@ public class AppDbContext : DbContext
             .HasMany(s => s.Doctors)
             .WithMany(d => d.Secretaries)
             .UsingEntity(j => j.ToTable("SecretaryDoctors"));
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasOne(p => p.Appointment)
+                .WithOne(a => a.Payment)
+                .HasForeignKey<Payment>(p => p.AppointmentId);
+
+            entity.Property(p => p.Amount).HasPrecision(10, 2);
+            entity.Property(p => p.Status).HasConversion<string>();
+        });
     }
 }
