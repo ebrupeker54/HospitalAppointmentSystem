@@ -18,9 +18,15 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 
 ### Patient
 
+### Patient
+
 | Booking | Test Result |
 |---|---|
 | ![Booking](docs/screenshots/booking.png) | ![Test Result](docs/screenshots/result-panel.png) |
+
+| Payment (Demo) |  |
+|---|---|
+| ![Payment](docs/screenshots/payment.png) |  |
 
 ### Doctor and Secretary
 
@@ -50,6 +56,7 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 - Only conflict-free time slots are offered
 - Appointment history with status tracking and cancellation
 - Viewing and printing laboratory and imaging results
+- Demo payment with a live credit card preview; payments are refunded automatically when an appointment is rejected or cancelled
 
 **Doctor and health staff** (nurse, radiology technician, lab technician)
 - Approve, reject (with a reason) and complete appointments
@@ -91,6 +98,7 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 | **`sealed override`** | `HealthStaff` seals `CanOffer()`; subclasses only declare their `AllowedCategory` and cannot change the rule itself |
 | **Composition** | An `Institution` has `Branch`es; a `Branch` has `Department`s and `WorkingHours` |
 | **Factory pattern** | `StaffFactory.Create(type)` decides which concrete class to instantiate when an admin registers a new employee |
+| **Strategy pattern** | `PaymentService` depends on `IPaymentProvider`; the current `DemoPaymentProvider` can be replaced by a real gateway by changing a single registration in `Program.cs`. Card data is never sent to the server |
 | **Generics** | The seeder's `Setup<T>() where T : HealthcareProfessional` creates any professional type with one method |
 
 The project also follows **SOLID** principles: business logic lives in services (*Single Responsibility*); new staff types can be added without changing the booking or approval code (*Open/Closed*); `AppointmentService` works with any `HealthcareProfessional` subtype (*Liskov Substitution*); and services depend on abstractions such as `IAppointmentRepository` and `IAppointmentManager` (*Dependency Inversion*).
