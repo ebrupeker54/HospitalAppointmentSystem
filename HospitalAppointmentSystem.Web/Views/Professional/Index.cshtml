@@ -81,12 +81,21 @@
                                         }
                                         else if (a.Status == AppointmentStatus.Approved)
                                         {
-                                            <form asp-action="Complete" asp-route-id="@a.Id" method="post"
-                                                  onsubmit="return confirm('Bu randevu tamamlandı olarak işaretlensin mi?');">
-                                                <button type="submit" class="btn btn-sm btn-outline-brand">
-                                                    <i class="bi bi-check2-all me-1"></i>Tamamla
-                                                </button>
-                                            </form>
+                                            if (a.StartTime <= DateTime.Now)
+                                            {
+                                                <form asp-action="Complete" asp-route-id="@a.Id" method="post"
+                                                      onsubmit="return confirm('Bu randevu tamamlandı olarak işaretlensin mi?');">
+                                                    <button type="submit" class="btn btn-sm btn-outline-brand">
+                                                        <i class="bi bi-check2-all me-1"></i>Tamamla
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <span class="small text-muted">
+                                                    <i class="bi bi-clock me-1"></i>Randevu saati bekleniyor
+                                                </span>
+                                            }
                                         }
                                         else if (a.Status == AppointmentStatus.Completed && Model.CanEnterResults)
                                         {

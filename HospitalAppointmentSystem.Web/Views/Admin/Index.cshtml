@@ -1,4 +1,5 @@
 ﻿@model HospitalAppointmentSystem.Web.ViewModels.AdminDashboardViewModel
+@using HospitalAppointmentSystem.Web.Models
 @{
     ViewData["Title"] = "Yönetim Paneli";
 }
@@ -28,7 +29,7 @@
     <div class="col">
         <div class="stat-card stat-violet">
             <div class="stat-icon"><i class="bi bi-person-badge"></i></div>
-            <div><div class="stat-value">@Model.DoctorCount</div><div class="stat-label">Doktor</div></div>
+            <div><div class="stat-value">@Model.StaffCount</div><div class="stat-label">Doktor</div></div>
         </div>
     </div>
     <div class="col">
@@ -47,36 +48,46 @@
 
 <div class="panel-card">
     <div class="panel-card-header">
-        <i class="bi bi-person-badge"></i> Doktorlar
-        <a asp-action="Doctors" class="btn btn-sm btn-light ms-auto">Tümünü Yönet</a>
+        <i class="bi bi-person-badge"></i> Personeller
+        <a asp-action="Employees" class="btn btn-sm btn-light ms-auto">Tümünü Yönet</a>
     </div>
     <div class="table-responsive">
         <table class="table table-modern align-middle">
             <thead>
-                <tr><th>Doktor</th><th>Uzmanlık</th><th>Şube</th><th>Hizmetler</th></tr>
+                <tr><th>Personel</th><th>Tür</th><th>Şube</th><th>Görev</th></tr>
             </thead>
             <tbody>
-                @foreach (var d in Model.Doctors)
+                @foreach (var s in Model.Staff)
                 {
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center gap-2">
-                                    <span class="avatar">@(d.FirstName.Length > 0 ? d.FirstName[0] : ' ')@(d.LastName.Length > 0 ? d.LastName[0] : ' ')</span>
-                                    <div>
-                                        <div class="cell-main">Dr. @d.FullName</div>
-                                        <small class="text-muted">@d.Email</small>
-                                    </div>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="avatar">@(s.FirstName.Length > 0 ? s.FirstName[0] : ' ')@(s.LastName.Length > 0 ? s.LastName[0] : ' ')</span>
+                                <div>
+                                    <div class="cell-main">@s.DisplayName</div>
+                                    <small class="text-muted">@s.Email</small>
                                 </div>
-                            </td>
-                            <td>@d.Specialty</td>
-                            <td>@d.Branch?.Name</td>
-                            <td>
-                            @foreach (var s in d.Services)
+                            </div>
+                        </td>
+                        <td><span class="badge service-badge">@StaffFactory.TypeOf(s).ToDisplay()</span></td>
+                        <td>@s.Branch?.Name</td>
+                        <td>
+                            @if (s is HealthcareProfessional p)
                             {
-                                        <span class="badge service-badge">@s.Name</span>
+                                @foreach (var service in p.Services)
+                                {
+                                    <span class="badge service-badge">@service.Name</span>
+                                }
                             }
-                            </td>
-                        </tr>
+                            else if (s is Secretary sec)
+                            {
+                                @foreach (var d in sec.Doctors)
+                                {
+                                    <span class="badge service-badge"><i class="bi bi-person me-1"></i>@d.DisplayName</span>
+                                }
+                            }
+                        </td>
+                    </tr>
                 }
             </tbody>
         </table>

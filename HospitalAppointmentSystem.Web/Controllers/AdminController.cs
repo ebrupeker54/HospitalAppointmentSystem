@@ -34,15 +34,17 @@ public class AdminController : Controller
         {
             InstitutionCount = _context.Institutions.Count(),
             BranchCount = _context.Branches.Count(),
-            DoctorCount = _context.Doctors.Count(),
+            StaffCount = _context.StaffMembers.Count(),
             PatientCount = _context.Patients.Count(),
             PendingAppointmentCount = _context.Appointments.Count(a => a.Status == AppointmentStatus.Pending),
-            Doctors = _context.Doctors
-                .Include(d => d.Branch)
-                .Include(d => d.Services)
-                .OrderBy(d => d.LastName)
+            Staff = _context.StaffMembers
+                .Include(s => s.Branch)
+                .OrderBy(s => s.LastName)
                 .ToList()
         };
+
+        _context.HealthcareProfessionals.Include(p => p.Services).Load();
+        _context.Secretaries.Include(s => s.Doctors).Load();
 
         return View(model);
     }

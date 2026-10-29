@@ -77,6 +77,10 @@ public class Appointment
     public void Complete()
     {
         EnsureStatus(AppointmentStatus.Approved, "Yalnızca onaylanmış randevular tamamlanabilir.");
+
+        if (StartTime > DateTime.Now)
+            throw new InvalidOperationException("Randevu saati gelmeden tamamlanamaz.");
+
         Status = AppointmentStatus.Completed;
     }
 
