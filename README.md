@@ -67,12 +67,17 @@ A web-based hospital and clinic appointment system developed as an **Object-Orie
 - Manages institutions (hospital/clinic), branches, departments and weekly working hours
 - Defines medical services with category, duration and price
 - Registers all staff types and assigns them to branches, departments, services or doctors
+- Clickable dashboard cards leading to detailed lists
+- Patient list with masked national IDs and appointment counts
+- Appointment list filterable by status and patient
 
 **Business rules**
 - An appointment must fit within the branch's working hours and the professional's availability
 - No overlapping appointments for the same professional or the same patient
-- Appointment lifecycle: `Pending → Approved → Completed`, or `Rejected` / `Cancelled`
+- Appointment lifecycle: `Pending → Approved → Completed`, or `Rejected` / `Cancelled` / `Expired`
 - The price is stored with the appointment, so later price changes do not affect existing appointments
+- An appointment cannot be completed (and no result can be entered) before its start time
+- A pending request whose time has passed is shown as **Expired** and can no longer be approved or rejected; this status is derived from the current time rather than stored
 
 ## Object-Oriented Design
 
